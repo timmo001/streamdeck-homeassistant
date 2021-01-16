@@ -22,8 +22,8 @@
       "UUID": "dev.timmo.homeassistant.script"
     }
   ],
-  "CodePath": "./code.html",
-  "PropertyInspectorPath": "./index.html?fragment=propertyInspector",
+  "CodePath": "code.html",
+  "PropertyInspectorPath": "index.html",
   "OS": [
     {
       "Platform": "mac",

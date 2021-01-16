@@ -21,9 +21,17 @@ if (!currentPlatform) {
 }
 switch (os.platform()) {
   case "darwin":
+    child_process.execSync(
+      "mv build/static/js/main*.js build/static/js/main.min.js"
+    );
+    // child_process.execSync(
+    //   "mv build/static/css/main*.css build/static/css/main.css"
+    // );
     child_process.execSync(`cp -R build ${currentPlatform.pluginsFolderPath}/`);
     break;
   case "win32":
+    fs.moveSync("build/static/js/main*.js", "build/static/js/main.min.js");
+    // fs.moveSync("build/static/css/main*.css", "build/static/css/main.css");
     fs.copySync(
       "build",
       `${currentPlatform.pluginsFolderPath}\\dev.timmo.homeassistant.sdPlugin`
