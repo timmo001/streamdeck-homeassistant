@@ -4,11 +4,9 @@ import React, { useState, useEffect, useReducer } from "react";
 import {
   // createUsePluginSettings,
   // createUseSDAction,
+  SDButton,
   SDTextInput,
 } from "react-streamdeck";
-
-import "react-streamdeck/dist/css/sdpi.css";
-import "./main.css"
 
 // const createGetSettings = (sd: any) => () => {
 //   if (sd.api.getSettings) {
@@ -74,12 +72,12 @@ export default function SetupConnection() {
               }}
             />
 
-            <div className="button" id="start">
-              {lox("setupConnectionIntroStart")}
-            </div>
-            <div className="button-transparent" id="close">
-              {lox("setupConnectionIntroClose")}
-            </div>
+            <SDButton
+              text={lox("setupConnectionIntroStart")}
+              onClick={(_event) => {
+                console.log("Setup Connection - Connection");
+              }}
+            />
           </div>
         </div>
       </div>
