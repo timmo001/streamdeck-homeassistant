@@ -27,15 +27,16 @@
     "unzipper": "0.10.11"
   },
   "scripts": {
-    "start": "echo \"Use yarn|npm dev or dev:watch to use this plugin\"",
     "build:dev": "react-scripts build",
     "build": "react-scripts build --production",
-    "test": "node scripts/test.js --env=jsdom",
+    "dev:base": "node scripts/dev.js",
+    "dev:watch": "nodemon --ext ts,tsx,js,css,html --watch public --watch src --exec \"yarn dev\"",
+    "dev": "cross-env NODE_ENV=development yarn build:dev && yarn dev:base",
+    "eject": "react-scripts eject",
     "export:base": "node scripts/export.js",
     "export": "npm-run-all -s build export:base",
-    "dev:base": "node scripts/dev.js",
-    "dev": "cross-env NODE_ENV=development yarn build:dev && yarn dev:base",
-    "dev:watch": "nodemon --ext ts,tsx,js,css,html --watch public --watch src --exec \"yarn dev\""
+    "start": "echo \"Use yarn|npm dev or dev:watch to use this plugin\"",
+    "test": "node scripts/test.js --env=jsdom"
   },
   "browserslist": {
     "production": [
