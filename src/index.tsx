@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import queryString from "query-string";
 
 import "react-streamdeck/dist/css/sdpi.css";
 import "./index.css";
@@ -7,10 +8,15 @@ import "./index.css";
 import PropertyInspector from "./PropertyInspector";
 import SetupConnection from "./SetupConnection";
 
-const pi = document.getElementById("property-inspector");
-const cs = document.getElementById("setup-connection");
+const { fragment } = queryString.parse(window.location.search);
 
 ReactDOM.render(
-  pi ? <PropertyInspector /> : cs ? <SetupConnection /> : null,
-  pi || cs
+  fragment === "propertyInspector" ? (
+    <PropertyInspector />
+  ) : fragment === "setupConnection" ? (
+    <SetupConnection />
+  ) : (
+    <div>Invalid Fragment!</div>
+  ),
+  document.getElementById("root")
 );

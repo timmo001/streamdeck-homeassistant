@@ -21,13 +21,11 @@ if (!currentPlatform) {
 }
 switch (os.platform()) {
   case "darwin":
-    child_process.execSync(
-      `cp -R build/dev.timmo.homeassistant.sdPlugin ${currentPlatform.pluginsFolderPath}/`
-    );
+    child_process.execSync(`cp -R build ${currentPlatform.pluginsFolderPath}/`);
     break;
   case "win32":
     fs.copySync(
-      "build/dev.timmo.homeassistant.sdPlugin",
+      "build",
       `${currentPlatform.pluginsFolderPath}\\dev.timmo.homeassistant.sdPlugin`
     );
     break;

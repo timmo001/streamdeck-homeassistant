@@ -42,6 +42,7 @@ export default function PropertyInspector() {
   );
 
   useEffect(() => {
+    // @ts-ignore
     createGetSettings($SD);
   }, []);
 
@@ -51,10 +52,12 @@ export default function PropertyInspector() {
   }
 
   const haInstances: SDSelectOption[] = [
+    // @ts-ignore
     { label: lox("haConnectionAdd"), value: "add" },
   ];
 
   console.log({
+    // @ts-ignore
     $SD,
     connectedResult,
     sendToPropertyInspectorResult,
@@ -65,6 +68,7 @@ export default function PropertyInspector() {
   return (
     <div>
       <SDSelectInput
+        // @ts-ignore
         label={lox("haConnection")}
         selectedOption={settings.selectState}
         options={haInstances}

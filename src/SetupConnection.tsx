@@ -1,43 +1,25 @@
 /* global $SD, lox */
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useEffect, useState } from "react";
 
-import {
-  // createUsePluginSettings,
-  // createUseSDAction,
-  SDButton,
-  SDTextInput,
-} from "react-streamdeck";
+import { createUseSDAction, SDButton, SDTextInput } from "react-streamdeck";
 
-// const createGetSettings = (sd: any) => () => {
-//   if (sd.api.getSettings) {
-//     sd.api.getSettings(sd.uuid);
-//   } else {
-//     sd.api.common.getSettings(sd.uuid);
-//   }
-// };
-
-// const useSDAction = createUseSDAction({
-//   useState,
-//   useEffect,
-// });
+const useSDAction = createUseSDAction({
+  useState,
+  useEffect,
+});
 
 export default function SetupConnection() {
-  // const connectedResult = useSDAction("connected");
-  // const sendToPropertyInspectorResult = useSDAction("sendToPropertyInspector");
+  const connectedResult = useSDAction("connected");
 
-  // const [settings, setSettings] = createUsePluginSettings({
-  //   useState,
-  //   useEffect,
-  //   useReducer,
-  // })({}, connectedResult);
   const [url, setUrl] = useState("");
 
-  // useEffect(() => {
-  //   createGetSettings($SD);
-  // }, []);
+  useEffect(() => {}, []);
 
   console.log({
+    connectedResult,
+    // @ts-ignore
     $SD,
+    // @ts-ignore
     lox,
   });
 
@@ -53,9 +35,11 @@ export default function SetupConnection() {
             </div>
           </div>
           <div className="header">
+            {/* @ts-ignore */}
             <h1>{lox("setupConnectionTitle")}</h1>
           </div>
           <div id="content">
+            {/* @ts-ignore */}
             <p>${lox("setupConnectionDescription")}</p>
             <img
               className="image"
@@ -64,6 +48,7 @@ export default function SetupConnection() {
 
             <SDTextInput
               value={url}
+              // @ts-ignore
               label={lox("haConnection")}
               onChange={(event) => {
                 setUrl(event.target.value);
@@ -72,8 +57,10 @@ export default function SetupConnection() {
             />
 
             <SDButton
+              // @ts-ignore
               text={lox("setupConnectionStart")}
-              onClick={(_event) => {
+              // @ts-ignore
+              onClick={(_event: any) => {
                 console.log("Setup Connection - Connection");
               }}
             />
