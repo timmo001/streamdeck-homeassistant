@@ -94,14 +94,13 @@
       "mjs"
     ]
   },
-  "babel": {
-    "presets": [
-      "react-app"
-    ]
-  },
   "eslintConfig": {
-    "extends": "react-app",
+    "extends": [
+      "eslint:recommended",
+      "plugin:react/recommended"
+    ],
     "plugins": [
+      "react",
       "react-hooks"
     ],
     "rules": {

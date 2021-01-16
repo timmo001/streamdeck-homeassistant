@@ -1,4 +1,4 @@
-import React from "react";
+import React, { ReactElement } from "react";
 import ReactDOM from "react-dom";
 
 import "react-streamdeck/dist/css/sdpi.css";
@@ -10,6 +10,10 @@ import SetupConnection from "./SetupConnection";
 const pi = document.getElementById("property-inspector");
 const cs = document.getElementById("setup-connection");
 
-const component = pi ? <PropertyInspector /> : cs ? <SetupConnection /> : null;
+const component: ReactElement = pi ? (
+  <PropertyInspector />
+) : cs ? (
+  <SetupConnection />
+) : null;
 
 ReactDOM.render(component, pi || cs);

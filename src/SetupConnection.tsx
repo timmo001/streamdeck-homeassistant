@@ -53,11 +53,10 @@ export default function SetupConnection() {
             </div>
           </div>
           <div className="header">
-            <h2>Home Assistant Plugin</h2>
-            <h1 id="title">{lox("setupConnectionIntro")}</h1>
+            <h1>{lox("setupConnectionTitle")}</h1>
           </div>
           <div id="content">
-            <p>${lox("setupConnectionIntroDescription")}</p>
+            <p>${lox("setupConnectionDescription")}</p>
             <img
               className="image"
               src="https://brands.home-assistant.io/homeassistant/icon.png"
@@ -73,7 +72,7 @@ export default function SetupConnection() {
             />
 
             <SDButton
-              text={lox("setupConnectionIntroStart")}
+              text={lox("setupConnectionStart")}
               onClick={(_event) => {
                 console.log("Setup Connection - Connection");
               }}
