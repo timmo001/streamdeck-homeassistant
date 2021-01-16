@@ -2,56 +2,87 @@
 import React, { useState, useEffect, useReducer } from "react";
 
 import {
-  createUsePluginSettings,
-  createUseSDAction,
+  // createUsePluginSettings,
+  // createUseSDAction,
   SDTextInput,
 } from "react-streamdeck";
 
 import "react-streamdeck/dist/css/sdpi.css";
+import "./main.css"
 
-const createGetSettings = (sd: any) => () => {
-  if (sd.api.getSettings) {
-    sd.api.getSettings(sd.uuid);
-  } else {
-    sd.api.common.getSettings(sd.uuid);
-  }
-};
+// const createGetSettings = (sd: any) => () => {
+//   if (sd.api.getSettings) {
+//     sd.api.getSettings(sd.uuid);
+//   } else {
+//     sd.api.common.getSettings(sd.uuid);
+//   }
+// };
 
-const useSDAction = createUseSDAction({
-  useState,
-  useEffect,
-});
+// const useSDAction = createUseSDAction({
+//   useState,
+//   useEffect,
+// });
 
 export default function SetupConnection() {
-  const connectedResult = useSDAction("connected");
-  const sendToPropertyInspectorResult = useSDAction("sendToPropertyInspector");
+  // const connectedResult = useSDAction("connected");
+  // const sendToPropertyInspectorResult = useSDAction("sendToPropertyInspector");
 
-  const [settings, setSettings] = createUsePluginSettings({
-    useState,
-    useEffect,
-    useReducer,
-  })({}, connectedResult);
+  // const [settings, setSettings] = createUsePluginSettings({
+  //   useState,
+  //   useEffect,
+  //   useReducer,
+  // })({}, connectedResult);
   const [url, setUrl] = useState("");
 
-  useEffect(() => {
-    createGetSettings($SD);
-  }, []);
+  // useEffect(() => {
+  //   createGetSettings($SD);
+  // }, []);
 
   console.log({
     $SD,
-    connectedResult,
+    lox,
   });
 
   return (
-    <div>
-      <SDTextInput
-        value={url}
-        label={lox("haInstance")}
-        onChange={(event) => {
-          setUrl(event.target.value);
-          return {};
-        }}
-      />
+    <div className="main">
+      <div className="center">
+        <div className="border">
+          <div className="status-bar">
+            <div className="status-row">
+              <div id="status-intro" className="status-cell"></div>
+              <div id="status-connection" className="status-cell"></div>
+              <div id="status-save" className="status-cell"></div>
+            </div>
+          </div>
+          <div className="header">
+            <h2>Home Assistant Plugin</h2>
+            <h1 id="title">{lox("setupConnectionIntro")}</h1>
+          </div>
+          <div id="content">
+            <p>${lox("setupConnectionIntroDescription")}</p>
+            <img
+              className="image"
+              src="https://brands.home-assistant.io/homeassistant/icon.png"
+            />
+
+            <SDTextInput
+              value={url}
+              label={lox("haConnection")}
+              onChange={(event) => {
+                setUrl(event.target.value);
+                return {};
+              }}
+            />
+
+            <div className="button" id="start">
+              {lox("setupConnectionIntroStart")}
+            </div>
+            <div className="button-transparent" id="close">
+              {lox("setupConnectionIntroClose")}
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

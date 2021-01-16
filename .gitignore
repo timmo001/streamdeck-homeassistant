@@ -117,4 +117,4 @@ dist
 
 # App specific
 build/
-release/
+# release/

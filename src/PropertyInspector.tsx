@@ -10,6 +10,7 @@ import {
 } from "react-streamdeck";
 
 import "react-streamdeck/dist/css/sdpi.css";
+import "./main.css"
 
 import { SDSelectOption } from "./types";
 

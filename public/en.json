@@ -8,6 +8,10 @@
   },
   "Localization": {
     "haConnection": "Connection",
-    "haConnectionAdd": "Add Home Assistant connection"
+    "haConnectionAdd": "Add Home Assistant connection",
+    "setupConnectionIntroClose": "Not Now",
+    "setupConnectionIntroDescription": "Connect a Home Assistant instance to access and control your home.",
+    "setupConnectionIntroStart": "Connect",
+    "setupConnectionIntroTitle": "Connect to Home Assistant"
   }
 }
