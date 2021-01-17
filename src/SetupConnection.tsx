@@ -8,7 +8,13 @@ const useSDAction = createUseSDAction({
   useEffect,
 });
 
-export default function SetupConnection() {
+interface SetupConnectionProps {
+  handleHassLogin: (url: string) => Promise<void>;
+}
+
+export default function SetupConnection({
+  handleHassLogin,
+}: SetupConnectionProps) {
   const connectedResult = useSDAction("connected");
 
   const [url, setUrl] = useState("http://homeassistant.local:8123");
@@ -57,11 +63,13 @@ export default function SetupConnection() {
             />
 
             <SDButton
+              disabled={!url || !url.startsWith("http")}
               // @ts-ignore
               text={lox("setupConnectionStart")}
               // @ts-ignore
               onClick={(_event: any) => {
                 console.log("Setup Connection - Connection");
+                handleHassLogin(url);
               }}
             />
           </div>

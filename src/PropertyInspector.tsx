@@ -9,7 +9,7 @@ import {
   SDTextInput,
 } from "react-streamdeck";
 
-import { SDSelectOption } from "./types";
+import { Option } from "./Types";
 
 const createGetSettings = (sd: any) => () => {
   if (sd.api.getSettings) {
@@ -51,7 +51,7 @@ export default function PropertyInspector() {
     window.open("./setup-connection.html");
   }
 
-  const haInstances: SDSelectOption[] = [
+  const haInstances: Option[] = [
     // @ts-ignore
     { label: lox("haConnectionAdd"), value: "add" },
   ];
