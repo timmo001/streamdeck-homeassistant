@@ -1,9 +1,14 @@
 /* global $SD, lox */
 import React, { useEffect, useState, useReducer, useMemo } from "react";
 import { createUsePluginSettings, createUseSDAction } from "react-streamdeck";
-import { Auth, HassConfig, HassEntities, HassUser } from "home-assistant-js-websocket";
+import {
+  Auth,
+  HassConfig,
+  HassEntities,
+  HassUser,
+} from "home-assistant-js-websocket";
 
-import { ProgressState } from "./Types";
+import { HassConnectionState, SettingHassConnection } from "./Types";
 import PropertyInspector from "./PropertyInspector";
 import SetupConnection from "./SetupConnection";
 import HomeAssistant, {
@@ -39,8 +44,11 @@ export default function App() {
   );
 
   const [hassAuth, setHassAuth] = useState<Auth>();
+  const [hassAuthToken, setHassAuthToken] = useState<string>();
   const [hassConfig, setHassConfig] = useState<HassConfig>();
-  const [hassConnection, setHassConnection] = useState<ProgressState>(-2);
+  const [hassConnectionState, setHassConnectionState] = useState<
+    HassConnectionState
+  >(-2);
   const [hassEntities, setHassEntities] = useState<HassEntities>();
   const [hassUser, setUser] = useState<HassUser>();
   const [hassUrl, setHassUrl] = useState<string>();
@@ -60,16 +68,16 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (hassConnection === 1 && && hassUser && hassUser.name&& page === "setup-connection") {
+    if (hassConnectionState === 0 && hassUser && page === "setup-connection") {
+      const connections: SettingHassConnection[] = settings.haConnections || [];
+      connections.push({
+        name: `${hassConfig.location_name} - ${hassUser.name}`,
+        authToken: hassAuthToken,
+        url: hassUrl,
+      });
       setSettings({
         ...settings,
-        hassConnections: [
-          ...settings.hassConnections,
-          {
-            name: `${hassConfig.location_name} - ${hassUser.name}`,
-            url: hassUrl,
-          },
-        ],
+        hassConnections: connections,
         hassConnection: hassUrl,
       });
       setTimeout(() => {
@@ -83,11 +91,15 @@ export default function App() {
     //     setHassConnection(-1);
     //   }
     // }
-  }, [hassConnection, hassUser]);
+  }, [hassConnectionState, hassUser]);
 
-  async function handleHassLogin(url: string): Promise<void> {
+  async function handleHassLogin(
+    url: string,
+    authToken: string
+  ): Promise<void> {
     setHassUrl(url);
-    setHassConnection(-1);
+    setHassAuthToken(authToken);
+    setHassConnectionState(-1);
   }
 
   return (
@@ -95,20 +107,21 @@ export default function App() {
       {page === "property-inspector" ? (
         <PropertyInspector />
       ) : page === "setup-connection" ? (
-        <SetupConnection handleHassLogin={handleHassLogin} />
+        <SetupConnection
+          hassConnectionState={hassConnectionState}
+          handleHassLogin={handleHassLogin}
+        />
       ) : (
         ""
       )}
       {hassUrl && (
         <HomeAssistant
-          connection={hassConnection}
-          authToken={settings.haConnections.find(
-            ({ url }) => url === settings.haConnection
-          )}
+          authToken={hassAuthToken}
+          connection={hassConnectionState}
           url={hassUrl}
           setAuth={setHassAuth}
           setConfig={setHassConfig}
-          setConnection={setHassConnection}
+          setConnection={setHassConnectionState}
           setEntities={setHassEntities}
           setUser={setUser}
         />

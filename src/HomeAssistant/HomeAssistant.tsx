@@ -13,15 +13,15 @@ import {
   subscribeEntities,
 } from "home-assistant-js-websocket";
 
-import { ProgressState } from "../Types";
+import { HassConnectionState } from "../Types";
 
 interface HomeAssistantProps {
-  connection: ProgressState;
   authToken: string;
+  connection: HassConnectionState;
   url: string;
   setAuth: (auth: Auth) => void;
   setConfig: (config: HassConfig) => void;
-  setConnection: (connected: ProgressState) => void;
+  setConnection: (connected: HassConnectionState) => void;
   setEntities: (entities: HassEntities) => void;
   setUser: (user: HassUser) => void;
 }
@@ -35,7 +35,7 @@ export interface HomeAssistantEntityProps {
 export interface HomeAssistantChangeProps {
   hassAuth?: Auth;
   hassConfig?: HassConfig;
-  hassConnection?: ProgressState;
+  hassConnection?: HassConnectionState;
   hassEntities?: HassEntities;
   handleHassChange?: (
     domain: string,
@@ -120,11 +120,28 @@ function HomeAssistant(props: HomeAssistantProps): any {
   const connectToHASS = useCallback(() => {
     if (!connection)
       (async (): Promise<void> => {
+        props.setConnection(-1);
         const auth = createLongLivedTokenAuth(props.url, props.authToken);
         try {
           connection = await createConnection({ auth });
         } catch (err) {
-          throw err;
+          console.error(
+            "Connection error:",
+            err,
+            err === 1
+              ? "Connection Error"
+              : err === 2
+              ? "Invalid Authentication"
+              : err === 3
+              ? "Connection Lost"
+              : err === 4
+              ? "Host Required"
+              : err === 5
+              ? "Invalid HTTPS to HTTP (HTTPS URL Required)"
+              : "Unknown Error"
+          );
+          props.setConnection(err);
+          return;
         }
         connection.removeEventListener("ready", eventHandler);
         connection.addEventListener("ready", eventHandler);
@@ -135,12 +152,13 @@ function HomeAssistant(props: HomeAssistantProps): any {
           console.log("Logged into Home Assistant as", user.name);
           props.setUser(user);
         });
-        props.setConnection(2);
+        props.setConnection(0);
       })();
   }, [props, updateConfig, updateEntites]);
 
   useEffect(() => {
-    if (connection || !props.url || props.connection === -2) return;
+    if (connection || !props.url || !props.authToken || props.connection === -2)
+      return;
     connectToHASS();
   }, [props.connection, props.url, connectToHASS]);
 

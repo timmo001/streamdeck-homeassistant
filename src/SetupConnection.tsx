@@ -1,12 +1,16 @@
 /* global $SD, lox */
 import React, { useState } from "react";
-
 import { SDButton, SDTextInput } from "react-streamdeck";
+
+import { HassConnectionState } from "./Types";
+
 interface SetupConnectionProps {
-  handleHassLogin: (url: string) => Promise<void>;
+  hassConnectionState: HassConnectionState;
+  handleHassLogin: (url: string, authToken: string) => Promise<void>;
 }
 
 export default function SetupConnection({
+  hassConnectionState,
   handleHassLogin,
 }: SetupConnectionProps) {
   const [authToken, setAuthToken] = useState<string>("");
@@ -34,7 +38,6 @@ export default function SetupConnection({
               className="image"
               src="https://brands.home-assistant.io/homeassistant/icon.png"
             />
-
             <SDTextInput
               value={url}
               // @ts-ignore
@@ -54,15 +57,30 @@ export default function SetupConnection({
               }}
             />
             <SDButton
-              disabled={!url || !url.startsWith("http")}
+              disabled={!url || !url.startsWith("http") || !authToken}
               // @ts-ignore
               text={lox("setupConnectionStart")}
               // @ts-ignore
               onClick={(_event: any) => {
                 console.log("Setup Connection - Connection");
-                handleHassLogin(url);
+                handleHassLogin(url, authToken);
               }}
             />
+            <h4 style={{ color: "red" }}>
+              {hassConnectionState === 1
+                ? "Connection Error"
+                : hassConnectionState === 2
+                ? "Invalid Authentication"
+                : hassConnectionState === 3
+                ? "Connection Lost"
+                : hassConnectionState === 4
+                ? "Host Required"
+                : hassConnectionState === 5
+                ? "Invalid HTTPS to HTTP (HTTPS URL Required)"
+                : hassConnectionState === 6
+                ? "Unknown Error"
+                : ""}
+            </h4>
           </div>
         </div>
       </div>
