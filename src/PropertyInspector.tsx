@@ -1,12 +1,10 @@
 /* global $SD, lox */
-import React, { useState, useEffect, useReducer } from "react";
+import React, { useState, useEffect, useReducer, useMemo } from "react";
 
 import {
   createUsePluginSettings,
   createUseSDAction,
-  SDNumberInput,
   SDSelectInput,
-  SDTextInput,
 } from "react-streamdeck";
 
 import { Option } from "./Types";
@@ -34,9 +32,8 @@ export default function PropertyInspector() {
     useReducer,
   })(
     {
-      numberState: 0,
-      selectState: "",
-      textState: "",
+      haConnections: [],
+      haConnection: "",
     },
     connectedResult
   );
@@ -51,10 +48,17 @@ export default function PropertyInspector() {
     window.open("./setup-connection.html");
   }
 
-  const haInstances: Option[] = [
-    // @ts-ignore
-    { label: lox("haConnectionAdd"), value: "add" },
-  ];
+  const haInstances: Option[] = useMemo(
+    () => [
+      ...settings.haConnections.map(({ name, url }) => ({
+        label: `${name} - ${url}`,
+        value: url,
+      })),
+      // @ts-ignore
+      { label: lox("haConnectionAdd"), value: "add" },
+    ],
+    [settings.haConnections]
+  );
 
   console.log({
     // @ts-ignore
@@ -77,30 +81,8 @@ export default function PropertyInspector() {
             ? handleAddHaConnection()
             : setSettings({
                 ...settings,
-                selectState: value,
+                haConnection: value,
               })
-        }
-      />
-
-      <SDTextInput
-        value={settings.textState}
-        label="Testing"
-        onChange={(event) =>
-          setSettings({
-            ...settings,
-            textState: event.target.value,
-          })
-        }
-      />
-
-      <SDNumberInput
-        value={settings.numberState}
-        label="Testing"
-        onChange={(event) =>
-          setSettings({
-            ...settings,
-            numberState: event.target.value,
-          })
         }
       />
     </div>

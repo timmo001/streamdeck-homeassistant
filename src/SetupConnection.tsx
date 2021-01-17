@@ -1,13 +1,7 @@
 /* global $SD, lox */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-import { createUseSDAction, SDButton, SDTextInput } from "react-streamdeck";
-
-const useSDAction = createUseSDAction({
-  useState,
-  useEffect,
-});
-
+import { SDButton, SDTextInput } from "react-streamdeck";
 interface SetupConnectionProps {
   handleHassLogin: (url: string) => Promise<void>;
 }
@@ -15,19 +9,8 @@ interface SetupConnectionProps {
 export default function SetupConnection({
   handleHassLogin,
 }: SetupConnectionProps) {
-  const connectedResult = useSDAction("connected");
-
-  const [url, setUrl] = useState("http://homeassistant.local:8123");
-
-  useEffect(() => {}, []);
-
-  console.log({
-    connectedResult,
-    // @ts-ignore
-    $SD,
-    // @ts-ignore
-    lox,
-  });
+  const [authToken, setAuthToken] = useState<string>("");
+  const [url, setUrl] = useState<string>("http://homeassistant.local:8123");
 
   return (
     <div className="main">
@@ -61,7 +44,15 @@ export default function SetupConnection({
                 return {};
               }}
             />
-
+            <SDTextInput
+              value={authToken}
+              // @ts-ignore
+              label={lox("haAuthToken")}
+              onChange={(event) => {
+                setAuthToken(event.target.value);
+                return {};
+              }}
+            />
             <SDButton
               disabled={!url || !url.startsWith("http")}
               // @ts-ignore

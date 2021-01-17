@@ -7,6 +7,7 @@
     "Tooltip": "This is the only action in this plugin"
   },
   "Localization": {
+    "haAuthToken":"Long-Lived Auth Token",
     "haConnection": "Connection",
     "haConnectionAdd": "Add Home Assistant connection",
     "setupConnectionDescription": "Connect a Home Assistant instance to access and control your home.",

@@ -1,49 +1,94 @@
 /* global $SD, lox */
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useReducer, useMemo } from "react";
+import { createUsePluginSettings, createUseSDAction } from "react-streamdeck";
 import { Auth, HassConfig, HassEntities } from "home-assistant-js-websocket";
 
 import { ProgressState } from "./Types";
-import { parseTokens } from "./HomeAssistant/Utils/Auth";
 import PropertyInspector from "./PropertyInspector";
 import SetupConnection from "./SetupConnection";
 import HomeAssistant, {
   handleChange as handleHassChange,
 } from "./HomeAssistant/HomeAssistant";
 
+const createGetSettings = (sd: any) => () => {
+  if (sd.api.getSettings) {
+    sd.api.getSettings(sd.uuid);
+  } else {
+    sd.api.common.getSettings(sd.uuid);
+  }
+};
+
+const useSDAction = createUseSDAction({
+  useState,
+  useEffect,
+});
+
 export default function App() {
+  const connectedResult = useSDAction("connected");
+
+  const [settings, setSettings] = createUsePluginSettings({
+    useState,
+    useEffect,
+    useReducer,
+  })(
+    {
+      haConnections: [],
+      haConnection: "",
+    },
+    connectedResult
+  );
+
+  const [authToken, setAuthToken] = useState<string>("");
   const [hassAuth, setHassAuth] = useState<Auth>();
   const [hassConfig, setHassConfig] = useState<HassConfig>();
   const [hassConnection, setHassConnection] = useState<ProgressState>(-2);
   const [hassEntities, setHassEntities] = useState<HassEntities>();
   const [hassUrl, setHassUrl] = useState<string>();
 
-  localStorage.clear();
+  const page: string = useMemo(
+    () =>
+      window.location.href.substring(
+        window.location.href.lastIndexOf("/") + 1,
+        window.location.href.lastIndexOf(".")
+      ),
+    []
+  );
 
   useEffect(() => {
-    if (window.location.search) parseTokens();
+    // @ts-ignore
+    createGetSettings($SD);
   }, []);
 
   useEffect(() => {
-    if (hassConnection === -2) {
-      // const haUrl = localStorage.getItem("hass_url");
-      // if (haUrl) {
-      //   setHassUrl(haUrl);
-      //   setHassConnection(-1);
-      // }
+    if (hassConnection === 1 && page === "setup-connection") {
+      setSettings({
+        ...settings,
+        hassConnections: [
+          ...settings.hassConnections,
+          {
+            name: `${hassConfig.location_name} - ${hassConfig.version} - ${hassUrl}`,
+            url: hassUrl,
+          },
+        ],
+        hassConnection: hassUrl,
+      });
+      setTimeout(() => {
+        window.close();
+      }, 1000);
     }
+    // if (hassConnection === -2) {
+    //   const haUrl = localStorage.getItem("hass_url");
+    //   if (haUrl) {
+    //     setHassUrl(haUrl);
+    //     setHassConnection(-1);
+    //   }
+    // }
   }, [hassConnection]);
 
   async function handleHassLogin(url: string): Promise<void> {
     setHassUrl(url);
     setHassConnection(-1);
   }
-
-  console.log({ hassAuth, hassConfig, hassConnection, hassEntities, hassUrl });
-
-  const page: string = window.location.href.substring(
-    window.location.href.lastIndexOf("/") + 1,
-    window.location.href.lastIndexOf(".")
-  );
 
   return (
     <>
@@ -57,6 +102,7 @@ export default function App() {
       {hassUrl && (
         <HomeAssistant
           connection={hassConnection}
+          authToken={authToken}
           url={hassUrl}
           setAuth={setHassAuth}
           setConfig={setHassConfig}

@@ -5,9 +5,7 @@ import {
   callService,
   Connection,
   createConnection,
-  ERR_HASS_HOST_REQUIRED,
-  ERR_INVALID_AUTH,
-  getAuth,
+  createLongLivedTokenAuth,
   getUser,
   HassConfig,
   HassEntities,
@@ -20,6 +18,7 @@ import { ProgressState } from "../Types";
 
 interface HomeAssistantProps {
   connection: ProgressState;
+  authToken: string;
   url: string;
   setAuth: (auth: Auth) => void;
   setConfig: (config: HassConfig) => void;
@@ -47,19 +46,6 @@ export interface HomeAssistantChangeProps {
 }
 
 let connection: Connection, auth: Auth;
-
-export async function loadTokens(): Promise<AuthData | null | undefined> {
-  let hassTokens: AuthData | PromiseLike<AuthData>;
-  localStorage.clear();
-  // try {
-  //   hassTokens = JSON.parse(String(localStorage.getItem("hass_tokens")));
-  // } catch (err) {}
-  return hassTokens;
-}
-
-export function saveTokens(tokens?: AuthData | null): void {
-  // localStorage.setItem("hass_tokens", JSON.stringify(tokens));
-}
 
 export function handleChange(
   domain: string,
@@ -112,7 +98,7 @@ export function handleChange(
   }
 }
 
-function HomeAssistant(props: HomeAssistantProps): null {
+function HomeAssistant(props: HomeAssistantProps): any {
   async function eventHandler(): Promise<void> {
     console.log("Home Assistant connection has been established again.");
   }
@@ -134,34 +120,11 @@ function HomeAssistant(props: HomeAssistantProps): null {
   const connectToHASS = useCallback(() => {
     if (!connection)
       (async (): Promise<void> => {
-        // localStorage.setItem("hass_url", props.url);
-        auth = await getAuth({
-          hassUrl: props.url,
-          saveTokens: saveTokens,
-          loadTokens: loadTokens,
-        });
+        const auth = createLongLivedTokenAuth(props.url, props.authToken);
         try {
           connection = await createConnection({ auth });
         } catch (err) {
-          try {
-            if (err !== ERR_HASS_HOST_REQUIRED) {
-              throw err;
-            }
-            if (err !== ERR_INVALID_AUTH) {
-              throw err;
-            }
-            // We can get invalid auth if auth tokens were stored that are no longer valid
-            // Clear stored tokens.
-            saveTokens();
-            auth = await getAuth({
-              hassUrl: props.url,
-              saveTokens: saveTokens,
-              loadTokens: loadTokens,
-            });
-            connection = await createConnection({ auth });
-          } catch (err) {
-            throw err;
-          }
+          throw err;
         }
         connection.removeEventListener("ready", eventHandler);
         connection.addEventListener("ready", eventHandler);
@@ -176,8 +139,7 @@ function HomeAssistant(props: HomeAssistantProps): null {
   }, [props, updateConfig, updateEntites]);
 
   useEffect(() => {
-    if (connection || !props.url || props.connection === -2 || !loadTokens())
-      return;
+    if (connection || !props.url || props.connection === -2) return;
     connectToHASS();
   }, [props.connection, props.url, connectToHASS]);
 
