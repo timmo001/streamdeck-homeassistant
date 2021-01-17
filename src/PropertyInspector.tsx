@@ -38,6 +38,7 @@ export default function PropertyInspector({
         ...settings,
         haConnection: connection.url,
       });
+      
     },
     [globalSettings, setGlobalSettings, setSettings, settings]
   );
@@ -54,7 +55,7 @@ export default function PropertyInspector({
   const haConnections: Option[] = useMemo(
     () => [
       ...globalSettings.haConnections.map(({ name, url }) => ({
-        label: `${name} - ${url}`,
+        label: name,
         value: url,
       })),
       // @ts-ignore
@@ -70,12 +71,13 @@ export default function PropertyInspector({
     return connection ? connection.value : "";
   }, [haConnections, settings]);
 
-  console.log("PropertyInspector:", {
-    // @ts-ignore
-    $SD,
-    settings,
-    haConnections,
-  });
+  // console.log("PropertyInspector:", {
+  //   // @ts-ignore
+  //   $SD,
+  //   globalSettings,
+  //   settings,
+  //   haConnections,
+  // });
 
   return (
     <div>

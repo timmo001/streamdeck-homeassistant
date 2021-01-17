@@ -101,9 +101,9 @@ export default function App() {
         detail: connection,
       });
       window.opener.document.dispatchEvent(event);
-      // setTimeout(() => {
-      //   window.close();
-      // }, 4000);
+      setTimeout(() => {
+        window.close();
+      }, 2000);
     }
     // if (hassConnection === -2) {
     //   const haUrl = localStorage.getItem("hass_url");
@@ -113,13 +113,6 @@ export default function App() {
     //   }
     // }
   }, [hassAuthToken, hassConfig, hassConnectionState, hassUrl, hassUser, page]);
-
-  // useEffect(() => {
-  //   if (hassConnectionState === 0 && settings.haConnection === hassUrl)
-  //     setTimeout(() => {
-  //       window.close();
-  //     }, 2000);
-  // }, [hassConnectionState, settings]);
 
   async function handleHassLogin(
     url: string,
@@ -131,7 +124,7 @@ export default function App() {
   }
 
   // @ts-ignore
-  console.log("App:", { connectedResult, $SD, settings });
+  console.log("App:", { connectedResult, $SD, globalSettings, settings });
 
   return (
     <>
