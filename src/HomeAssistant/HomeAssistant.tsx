@@ -157,7 +157,13 @@ function HomeAssistant(props: HomeAssistantProps): any {
   }, [props, updateConfig, updateEntites]);
 
   useEffect(() => {
-    if (connection || !props.url || !props.authToken || props.connection === -2)
+    if (
+      connection ||
+      !props.url ||
+      !props.authToken ||
+      props.connection === -2 ||
+      props.connection > 0
+    )
       return;
     connectToHASS();
   }, [props.connection, props.url, connectToHASS]);

@@ -114,7 +114,7 @@ export default function App() {
       ) : (
         ""
       )}
-      {hassUrl && (
+      {hassUrl && hassAuthToken ? (
         <HomeAssistant
           authToken={hassAuthToken}
           connection={hassConnectionState}
@@ -125,6 +125,8 @@ export default function App() {
           setEntities={setHassEntities}
           setUser={setUser}
         />
+      ) : (
+        ""
       )}
     </>
   );
