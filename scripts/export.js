@@ -38,10 +38,10 @@ console.log(`Fetching distribution tool for platform (${os.platform()})`);
 http
   .get(
     `${currentPlatform.distributionToolUrl}${currentPlatform.distributionToolUrlFilename}`,
-    function(response) {
+    function (response) {
       response.pipe(file);
-      file.on("finish", function() {
-        file.close(function() {
+      file.on("finish", function () {
+        file.close(function () {
           console.log("Unzipping distribution tool file");
 
           const unzipResult = child_process.spawnSync("tar", [
@@ -76,7 +76,7 @@ http
       });
     }
   )
-  .on("error", function(err) {
+  .on("error", function (err) {
     // Handle errors
     console.log("Error fetching DistributionTool for your platform.");
     process.exit(-1);

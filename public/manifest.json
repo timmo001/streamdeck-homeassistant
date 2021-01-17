@@ -1,4 +1,14 @@
 {
+  "Author": "Aidan Timson <Timmo>",
+  "Category": "Home Assistant",
+  "CategoryIcon": "plugin/images/actions/category",
+  "DefaultWindowSize": [500, 650],
+  "Description": "Access and control your Home Assistant instance",
+  "Icon": "plugin/images/icons/plugin",
+  "Name": "Home Assistant",
+  "SDKVersion": 2,
+  "URL": "https://timmo.dev",
+  "Version": "1.0.0",
   "Actions": [
     {
       "Icon": "action/images/actionimage",
@@ -12,18 +22,8 @@
       "UUID": "dev.timmo.homeassistant.script"
     }
   ],
-  "Author": "Aidan Timson <Timmo>",
-  "Category": "Home Assistant",
-  "CategoryIcon": "plugin/images/actions/category",
   "CodePath": "code.html",
-  "DefaultWindowSize": [500, 650],
-  "Description": "Access and control your Home Assistant instance",
-  "Icon": "plugin/images/icons/plugin",
-  "Name": "Home Assistant",
-  "PropertyInspectorPath": "propertyinspector/index.html",
-  "SDKVersion": 2,
-  "URL": "https://timmo.dev",
-  "Version": "1.0.0",
+  "PropertyInspectorPath": "property-inspector.html",
   "OS": [
     {
       "Platform": "mac",

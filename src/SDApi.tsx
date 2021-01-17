@@ -2,7 +2,7 @@
 
 declare const $SD: any;
 
-const DestinationEnum = Object.freeze({
+export const DestinationEnum = Object.freeze({
   HARDWARE_AND_SOFTWARE: 0,
   HARDWARE_ONLY: 1,
   SOFTWARE_ONLY: 2,
@@ -37,7 +37,7 @@ const DestinationEnum = Object.freeze({
  * keyUp
  */
 
-const SDApi = {
+export const SDApi = {
   send: function(
     context: any,
     fn: string,

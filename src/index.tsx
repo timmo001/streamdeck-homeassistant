@@ -7,10 +7,12 @@ import "./index.css";
 import PropertyInspector from "./PropertyInspector";
 import SetupConnection from "./SetupConnection";
 
-const pi = document.getElementById("property-inspector");
-const cs = document.getElementById("setup-connection");
+const page: string = window.location.href.substring(
+  window.location.href.lastIndexOf("/") + 1,
+  window.location.href.lastIndexOf(".")
+);
 
 ReactDOM.render(
-  pi ? <PropertyInspector /> : cs ? <SetupConnection /> : null,
-  pi || cs
+  page === "property-inspector" ? <PropertyInspector /> : <SetupConnection />,
+  document.getElementById("root")
 );
