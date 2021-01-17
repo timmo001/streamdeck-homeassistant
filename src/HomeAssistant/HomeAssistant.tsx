@@ -51,14 +51,15 @@ let connection: Connection, auth: Auth;
 
 export async function loadTokens(): Promise<AuthData | null | undefined> {
   let hassTokens: AuthData | PromiseLike<AuthData>;
-  try {
-    hassTokens = JSON.parse(String(localStorage.getItem("hass_tokens")));
-  } catch (err) {}
+  localStorage.clear();
+  // try {
+  //   hassTokens = JSON.parse(String(localStorage.getItem("hass_tokens")));
+  // } catch (err) {}
   return hassTokens;
 }
 
 export function saveTokens(tokens?: AuthData | null): void {
-  localStorage.setItem("hass_tokens", JSON.stringify(tokens));
+  // localStorage.setItem("hass_tokens", JSON.stringify(tokens));
 }
 
 export function handleChange(
@@ -134,7 +135,7 @@ function HomeAssistant(props: HomeAssistantProps): null {
   const connectToHASS = useCallback(() => {
     if (!connection)
       (async (): Promise<void> => {
-        localStorage.setItem("hass_url", props.url);
+        // localStorage.setItem("hass_url", props.url);
         auth = await getAuth({
           hassUrl: props.url,
           saveTokens: saveTokens,

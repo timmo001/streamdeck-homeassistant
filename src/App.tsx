@@ -17,17 +17,19 @@ export default function App() {
   const [hassEntities, setHassEntities] = useState<HassEntities>();
   const [hassUrl, setHassUrl] = useState<string>();
 
+  localStorage.clear();
+
   useEffect(() => {
     if (window.location.search) parseTokens();
   }, []);
 
   useEffect(() => {
     if (hassConnection === -2) {
-      const haUrl = localStorage.getItem("hass_url");
-      if (haUrl) {
-        setHassUrl(haUrl);
-        setHassConnection(-1);
-      }
+      // const haUrl = localStorage.getItem("hass_url");
+      // if (haUrl) {
+      //   setHassUrl(haUrl);
+      //   setHassConnection(-1);
+      // }
     }
   }, [hassConnection]);
 
