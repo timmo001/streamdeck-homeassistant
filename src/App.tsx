@@ -1,6 +1,10 @@
 /* global $SD, lox */
 import React, { useEffect, useState, useReducer, useMemo } from "react";
-import { createUsePluginSettings, createUseSDAction } from "react-streamdeck";
+import {
+  createUseGlobalSettings,
+  createUsePluginSettings,
+  createUseSDAction,
+} from "react-streamdeck";
 import {
   Auth,
   HassConfig,
@@ -20,6 +24,11 @@ const useSDAction = createUseSDAction({
   useEffect,
 });
 
+const usePluginGlobalSettings = createUseGlobalSettings({
+  useState,
+  useEffect,
+  useReducer,
+});
 const usePluginSettings = createUsePluginSettings({
   useState,
   useEffect,
@@ -29,9 +38,15 @@ const usePluginSettings = createUsePluginSettings({
 export default function App() {
   const connectedResult = useSDAction("connected");
 
-  const [settings, setSettings] = usePluginSettings(
+  const [globalSettings, setGlobalSettings] = usePluginGlobalSettings(
     {
       haConnections: [],
+    },
+    connectedResult
+  );
+
+  const [settings, setSettings] = usePluginSettings(
+    {
       haConnection: "",
       textState: "",
     },
@@ -58,19 +73,37 @@ export default function App() {
   );
 
   useEffect(() => {
-    if (hassConnectionState === 0 && hassUser && page === "setup-connection") {
-      const connections: SettingHaConnection[] = settings.haConnections || [];
-      connections.push({
+    if (
+      hassConnectionState === 0 &&
+      page === "setup-connection" &&
+      hassUser &&
+      hassUser &&
+      hassConfig
+    ) {
+      // const connections: SettingHaConnection[] = globalSettings.haConnections || [];
+      // connections.push({
+      //   name: `${hassConfig.location_name} - ${hassUser.name}`,
+      //   authToken: hassAuthToken,
+      //   url: hassUrl,
+      // });
+      // $SD.api.common.setSettings({
+      // setSettings({
+      //   ...settings,
+      //   haConnections: connections,
+      //   haConnection: hassUrl,
+      // });
+      const connection: SettingHaConnection = {
         name: `${hassConfig.location_name} - ${hassUser.name}`,
         authToken: hassAuthToken,
         url: hassUrl,
+      };
+      const event = new CustomEvent<SettingHaConnection>("saveConnection", {
+        detail: connection,
       });
-      // $SD.api.common.setSettings({
-      setSettings({
-        ...settings,
-        haConnections: connections,
-        haConnection: hassUrl,
-      });
+      window.opener.document.dispatchEvent(event);
+      // setTimeout(() => {
+      //   window.close();
+      // }, 4000);
     }
     // if (hassConnection === -2) {
     //   const haUrl = localStorage.getItem("hass_url");
@@ -79,14 +112,14 @@ export default function App() {
     //     setHassConnection(-1);
     //   }
     // }
-  }, [hassConnectionState, hassUser]);
+  }, [hassAuthToken, hassConfig, hassConnectionState, hassUrl, hassUser, page]);
 
-  useEffect(() => {
-    if (hassConnectionState === 0 && settings.haConnection === hassUrl)
-      setTimeout(() => {
-        window.close();
-      }, 2000);
-  }, [hassConnectionState, settings]);
+  // useEffect(() => {
+  //   if (hassConnectionState === 0 && settings.haConnection === hassUrl)
+  //     setTimeout(() => {
+  //       window.close();
+  //     }, 2000);
+  // }, [hassConnectionState, settings]);
 
   async function handleHassLogin(
     url: string,
@@ -103,7 +136,12 @@ export default function App() {
   return (
     <>
       {page === "property-inspector" ? (
-        <PropertyInspector settings={settings} setSettings={setSettings} />
+        <PropertyInspector
+          globalSettings={globalSettings}
+          settings={settings}
+          setGlobalSettings={setGlobalSettings}
+          setSettings={setSettings}
+        />
       ) : page === "setup-connection" ? (
         <SetupConnection
           hassConnectionState={hassConnectionState}

@@ -1,19 +1,51 @@
 /* global $SD, lox */
-import React, { Dispatch, SetStateAction, useEffect, useMemo } from "react";
+import React, {
+  Dispatch,
+  SetStateAction,
+  useCallback,
+  useEffect,
+  useMemo,
+} from "react";
 
 import { SDSelectInput, SDTextInput } from "react-streamdeck";
 
-import { Option, Settings } from "./Types";
+import { Option, SettingHaConnection, Settings, GlobalSettings } from "./Types";
 
 interface PropertyInspectorProps {
+  globalSettings: GlobalSettings;
   settings: Settings;
+  setGlobalSettings: Dispatch<SetStateAction<GlobalSettings>>;
   setSettings: Dispatch<SetStateAction<Settings>>;
 }
 
 export default function PropertyInspector({
   settings,
   setSettings,
+  globalSettings,
+  setGlobalSettings,
 }: PropertyInspectorProps) {
+  const saveConnection = useCallback(
+    (inEvent: CustomEvent<SettingHaConnection>) => {
+      const connection: SettingHaConnection = inEvent.detail;
+      const connections: SettingHaConnection[] =
+        globalSettings.haConnections || [];
+      connections.push(connection);
+      setGlobalSettings({
+        ...globalSettings,
+        haConnections: connections,
+      });
+      setSettings({
+        ...settings,
+        haConnection: connection.url,
+      });
+    },
+    [globalSettings, setGlobalSettings, setSettings, settings]
+  );
+
+  useEffect(() => {
+    document.addEventListener("saveConnection", saveConnection);
+  }, [saveConnection]);
+
   function handleAddHaConnection() {
     console.log("Add HA connection..");
     window.open("./setup-connection.html");
@@ -21,15 +53,14 @@ export default function PropertyInspector({
 
   const haConnections: Option[] = useMemo(
     () => [
-      ...settings.haConnections.map(({ name, url }) => ({
+      ...globalSettings.haConnections.map(({ name, url }) => ({
         label: `${name} - ${url}`,
         value: url,
       })),
       // @ts-ignore
       { label: lox("haConnectionAdd"), value: "add" },
     ],
-    // @ts-ignore
-    [lox, settings.haConnections]
+    [globalSettings.haConnections]
   );
 
   const selectedHaConnection: string = useMemo(() => {

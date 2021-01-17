@@ -20,8 +20,11 @@ export interface Option {
   value: string;
 }
 
-export interface Settings {
+export interface GlobalSettings {
   haConnections: SettingHaConnection[];
+}
+
+export interface Settings {
   haConnection: string;
   textState: string;
 }

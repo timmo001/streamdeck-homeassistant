@@ -165,7 +165,7 @@ function HomeAssistant(props: HomeAssistantProps): any {
     )
       return;
     connectToHASS();
-  }, [props.connection, props.url, connectToHASS]);
+  }, [connectToHASS, props.authToken, props.connection, props.url]);
 
   return null;
 }
