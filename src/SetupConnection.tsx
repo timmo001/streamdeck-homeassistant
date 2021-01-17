@@ -11,7 +11,7 @@ const useSDAction = createUseSDAction({
 export default function SetupConnection() {
   const connectedResult = useSDAction("connected");
 
-  const [url, setUrl] = useState("");
+  const [url, setUrl] = useState("http://homeassistant.local:8123");
 
   useEffect(() => {}, []);
 
