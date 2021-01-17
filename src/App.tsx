@@ -1,4 +1,3 @@
-/* global $SD, $localizedStrings */
 import React, { useEffect, useState, useReducer, useMemo } from "react";
 import {
   createUseGlobalSettings,
@@ -18,6 +17,8 @@ import SetupConnection from "./SetupConnection";
 import HomeAssistant, {
   handleChange as handleHassChange,
 } from "./HomeAssistant/HomeAssistant";
+import { loadLocalization, localizedStrings } from "./Common/Common";
+import streamDeck from "./Common/StreamDeck";
 
 const useSDAction = createUseSDAction({
   useState,
@@ -73,13 +74,10 @@ export default function App() {
   );
 
   useEffect(() => {
-    // @ts-ignore
-    if (!$localizedStrings || !$localizedStrings["setupConnectionTitle"]) {
+    if (!localizedStrings || !localizedStrings["setupConnectionTitle"]) {
       var url = new URL(window.location.href);
       var language = url.searchParams.get("language");
-      if (language)
-        // @ts-ignore
-        loadLocalization(language, "./");
+      if (language) loadLocalization(language, "./");
     }
   }, []);
 
@@ -122,8 +120,7 @@ export default function App() {
   }
 
   console.log("App:", {
-    // @ts-ignore
-    $SD,
+    streamDeck,
     connectedResult,
     globalSettings,
     settings,

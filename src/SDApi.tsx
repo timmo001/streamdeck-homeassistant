@@ -1,6 +1,6 @@
-/* global $SD */
+/* global streamDeck */
 
-declare const $SD: any;
+declare const streamDeck: any;
 
 export const DestinationEnum = Object.freeze({
   HARDWARE_AND_SOFTWARE: 0,
@@ -15,7 +15,7 @@ export const DestinationEnum = Object.freeze({
  * - setContext: sets the context of the current plugin
  * - exec: prepare the correct JSON structure and send
  *
- * Methods exposed in the $SD.api alias
+ * Methods exposed in the streamDeck.api alias
  * Messages send from the plugin
  * -----------------------------
  * - showAlert
@@ -60,14 +60,14 @@ export const SDApi = {
       console.log(JSON.stringify(payload.payload));
       console.log("-------");
     }
-    $SD.connection && $SD.connection.sendJSON(pl);
+    streamDeck.connection && streamDeck.connection.sendJSON(pl);
 
     /**
      * DEBUG-Utility to quickly show the current payload in the Property Inspector.
      */
 
     if (
-      $SD.connection &&
+      streamDeck.connection &&
       ["sendToPropertyInspector", "showOK", "showAlert", "setSettings"].indexOf(
         fn
       ) === -1
@@ -209,12 +209,12 @@ export const SDApi = {
 
     dbgSend: function(fn: string | number, context: any) {
       /** lookup if an appropriate function exists */
-      if ($SD.connection && this[fn] && typeof this[fn] === "function") {
+      if (streamDeck.connection && this[fn] && typeof this[fn] === "function") {
         /** verify if type of payload is an object/json */
         const payload = this[fn]();
         if (typeof payload === "object") {
           Object.assign({ event: fn, context: context }, payload);
-          $SD.connection && $SD.connection.sendJSON(payload);
+          streamDeck.connection && streamDeck.connection.sendJSON(payload);
         }
       }
       console.log(this, fn, typeof this[fn], this[fn]());

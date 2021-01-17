@@ -1,4 +1,3 @@
-/* global $SD, $localizedStrings */
 import React, { useState } from "react";
 import { SDButton, SDTextInput } from "react-streamdeck";
 
@@ -30,14 +29,14 @@ export default function SetupConnection({
           <div className="header">
             <h1>
               {// @ts-ignore
-              $localizedStrings["setupConnectionTitle"] ||
+              localizedStrings["setupConnectionTitle"] ||
                 "Connect to Home Assistant"}
             </h1>
           </div>
           <div id="content">
             <p>
               {// @ts-ignore
-              $localizedStrings["setupConnectionDescription"] ||
+              localizedStrings["setupConnectionDescription"] ||
                 "Connect a Home Assistant instance to access and control your home."}
             </p>
             <img
@@ -47,7 +46,7 @@ export default function SetupConnection({
             <SDTextInput
               value={url}
               // @ts-ignore
-              label={$localizedStrings["haUrl"] || "URL"}
+              label={localizedStrings["haUrl"] || "URL"}
               onChange={(event) => {
                 setUrl(event.target.value);
                 return {};
@@ -57,7 +56,7 @@ export default function SetupConnection({
               value={authToken}
               label={
                 // @ts-ignore
-                $localizedStrings["haAccessToken"] || "Long-Lived Access Token"
+                localizedStrings["haAccessToken"] || "Long-Lived Access Token"
               }
               onChange={(event) => {
                 setAuthToken(event.target.value);
@@ -68,7 +67,7 @@ export default function SetupConnection({
               disabled={!url || !url.startsWith("http") || !authToken}
               text={
                 // @ts-ignore
-                $localizedStrings["setupConnectionStart"] || "Connect"
+                localizedStrings["setupConnectionStart"] || "Connect"
               }
               // @ts-ignore
               onClick={(_event: any) => {

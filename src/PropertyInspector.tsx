@@ -1,4 +1,3 @@
-/* global $SD, lox */
 import React, {
   Dispatch,
   SetStateAction,
@@ -51,7 +50,7 @@ export default function PropertyInspector({
     console.log("Add HA connection..");
     window.open(
       // @ts-ignore
-      `./setup-connection.html?language=${$SD.applicationInfo.application.language}&streamDeckVersion=${$SD.applicationInfo.application.version}&pluginVersion=${$SD.applicationInfo.plugin.version}`
+      `./setup-connection.html?language=${streamDeck.applicationInfo.application.language}&streamDeckVersion=${streamDeck.applicationInfo.application.version}&pluginVersion=${streamDeck.applicationInfo.plugin.version}`
     );
   }
 
@@ -76,7 +75,7 @@ export default function PropertyInspector({
 
   // console.log("PropertyInspector:", {
   //   // @ts-ignore
-  //   $SD,
+  //   streamDeck,
   //   globalSettings,
   //   settings,
   //   haConnections,
