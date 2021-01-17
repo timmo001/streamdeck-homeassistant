@@ -15,7 +15,6 @@ import {
   subscribeConfig,
   subscribeEntities,
 } from "home-assistant-js-websocket";
-import http from "http";
 
 import { ProgressState } from "../Types";
 
@@ -175,11 +174,6 @@ function HomeAssistant(props: HomeAssistantProps): null {
         props.setConnection(2);
       })();
   }, [props, updateConfig, updateEntites]);
-
-  useEffect(() => {
-    const server = http.createServer();
-    server.listen(28123);
-  }, []);
 
   useEffect(() => {
     if (connection || !props.url || props.connection === -2 || !loadTokens())
