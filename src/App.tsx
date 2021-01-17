@@ -80,18 +80,6 @@ export default function App() {
       hassUser &&
       hassConfig
     ) {
-      // const connections: SettingHaConnection[] = globalSettings.haConnections || [];
-      // connections.push({
-      //   name: `${hassConfig.location_name} - ${hassUser.name}`,
-      //   authToken: hassAuthToken,
-      //   url: hassUrl,
-      // });
-      // $SD.api.common.setSettings({
-      // setSettings({
-      //   ...settings,
-      //   haConnections: connections,
-      //   haConnection: hassUrl,
-      // });
       const connection: SettingHaConnection = {
         name: `${hassConfig.location_name} - ${hassUser.name}`,
         authToken: hassAuthToken,
@@ -123,8 +111,13 @@ export default function App() {
     setHassConnectionState(-1);
   }
 
-  // @ts-ignore
-  console.log("App:", { connectedResult, $SD, globalSettings, settings });
+  console.log("App:", {
+    // @ts-ignore
+    $SD,
+    connectedResult,
+    globalSettings,
+    settings,
+  });
 
   return (
     <>

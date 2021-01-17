@@ -1,4 +1,4 @@
-/* global $SD, lox */
+/* global $SD, $localizedStrings */
 import React, { useState } from "react";
 import { SDButton, SDTextInput } from "react-streamdeck";
 
@@ -28,12 +28,18 @@ export default function SetupConnection({
             </div>
           </div>
           <div className="header">
-            {/* @ts-ignore */}
-            <h1>{lox("setupConnectionTitle")}</h1>
+            <h1>
+              {// @ts-ignore
+              $localizedStrings["setupConnectionTitle"] ||
+                "Connect to Home Assistant"}
+            </h1>
           </div>
           <div id="content">
-            {/* @ts-ignore */}
-            <p>{lox("setupConnectionDescription")}</p>
+            <p>
+              {// @ts-ignore
+              $localizedStrings["setupConnectionDescription"] ||
+                "Connect a Home Assistant instance to access and control your home."}
+            </p>
             <img
               className="image"
               src="https://brands.home-assistant.io/homeassistant/icon.png"
@@ -41,7 +47,7 @@ export default function SetupConnection({
             <SDTextInput
               value={url}
               // @ts-ignore
-              label={lox("haConnection")}
+              label={$localizedStrings["haUrl"] || "URL"}
               onChange={(event) => {
                 setUrl(event.target.value);
                 return {};
@@ -49,8 +55,10 @@ export default function SetupConnection({
             />
             <SDTextInput
               value={authToken}
-              // @ts-ignore
-              label={lox("haAuthToken")}
+              label={
+                // @ts-ignore
+                $localizedStrings["haAccessToken"] || "Long-Lived Access Token"
+              }
               onChange={(event) => {
                 setAuthToken(event.target.value);
                 return {};
@@ -58,8 +66,10 @@ export default function SetupConnection({
             />
             <SDButton
               disabled={!url || !url.startsWith("http") || !authToken}
-              // @ts-ignore
-              text={lox("setupConnectionStart")}
+              text={
+                // @ts-ignore
+                $localizedStrings["setupConnectionStart"] || "Connect"
+              }
               // @ts-ignore
               onClick={(_event: any) => {
                 console.log("Setup Connection - Connection");
