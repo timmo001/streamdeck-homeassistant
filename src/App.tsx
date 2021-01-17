@@ -1,4 +1,4 @@
-/* global $SD, lox */
+/* global $SD, $localizedStrings */
 import React, { useEffect, useState, useReducer, useMemo } from "react";
 import {
   createUseGlobalSettings,
@@ -67,16 +67,26 @@ export default function App() {
     () =>
       window.location.href.substring(
         window.location.href.lastIndexOf("/") + 1,
-        window.location.href.lastIndexOf(".")
+        window.location.href.lastIndexOf(".html")
       ),
     []
   );
 
   useEffect(() => {
+    // @ts-ignore
+    if (!$localizedStrings || !$localizedStrings["setupConnectionTitle"]) {
+      var url = new URL(window.location.href);
+      var language = url.searchParams.get("language");
+      if (language)
+        // @ts-ignore
+        loadLocalization(language, "./");
+    }
+  }, []);
+
+  useEffect(() => {
     if (
-      hassConnectionState === 0 &&
       page === "setup-connection" &&
-      hassUser &&
+      hassConnectionState === 0 &&
       hassUser &&
       hassConfig
     ) {

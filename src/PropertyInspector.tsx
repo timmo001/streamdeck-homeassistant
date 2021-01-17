@@ -26,6 +26,7 @@ export default function PropertyInspector({
 }: PropertyInspectorProps) {
   const saveConnection = useCallback(
     (inEvent: CustomEvent<SettingHaConnection>) => {
+      console.log("saveConnection Event:", inEvent);
       const connection: SettingHaConnection = inEvent.detail;
       const connections: SettingHaConnection[] =
         globalSettings.haConnections || [];
@@ -38,7 +39,6 @@ export default function PropertyInspector({
         ...settings,
         haConnection: connection.url,
       });
-      
     },
     [globalSettings, setGlobalSettings, setSettings, settings]
   );
@@ -49,7 +49,10 @@ export default function PropertyInspector({
 
   function handleAddHaConnection() {
     console.log("Add HA connection..");
-    window.open("./setup-connection.html");
+    window.open(
+      // @ts-ignore
+      `./setup-connection.html?language=${$SD.applicationInfo.application.language}&streamDeckVersion=${$SD.applicationInfo.application.version}&pluginVersion=${$SD.applicationInfo.plugin.version}`
+    );
   }
 
   const haConnections: Option[] = useMemo(
