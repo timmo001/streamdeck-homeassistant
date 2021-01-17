@@ -1,7 +1,7 @@
 /* global $SD, lox */
 import React, { useEffect, useState, useReducer, useMemo } from "react";
 import { createUsePluginSettings, createUseSDAction } from "react-streamdeck";
-import { Auth, HassConfig, HassEntities } from "home-assistant-js-websocket";
+import { Auth, HassConfig, HassEntities, HassUser } from "home-assistant-js-websocket";
 
 import { ProgressState } from "./Types";
 import PropertyInspector from "./PropertyInspector";
@@ -38,11 +38,11 @@ export default function App() {
     connectedResult
   );
 
-  const [authToken, setAuthToken] = useState<string>("");
   const [hassAuth, setHassAuth] = useState<Auth>();
   const [hassConfig, setHassConfig] = useState<HassConfig>();
   const [hassConnection, setHassConnection] = useState<ProgressState>(-2);
   const [hassEntities, setHassEntities] = useState<HassEntities>();
+  const [hassUser, setUser] = useState<HassUser>();
   const [hassUrl, setHassUrl] = useState<string>();
 
   const page: string = useMemo(
@@ -60,13 +60,13 @@ export default function App() {
   }, []);
 
   useEffect(() => {
-    if (hassConnection === 1 && page === "setup-connection") {
+    if (hassConnection === 1 && && hassUser && hassUser.name&& page === "setup-connection") {
       setSettings({
         ...settings,
         hassConnections: [
           ...settings.hassConnections,
           {
-            name: `${hassConfig.location_name} - ${hassConfig.version} - ${hassUrl}`,
+            name: `${hassConfig.location_name} - ${hassUser.name}`,
             url: hassUrl,
           },
         ],
@@ -83,7 +83,7 @@ export default function App() {
     //     setHassConnection(-1);
     //   }
     // }
-  }, [hassConnection]);
+  }, [hassConnection, hassUser]);
 
   async function handleHassLogin(url: string): Promise<void> {
     setHassUrl(url);
@@ -102,12 +102,15 @@ export default function App() {
       {hassUrl && (
         <HomeAssistant
           connection={hassConnection}
-          authToken={authToken}
+          authToken={settings.haConnections.find(
+            ({ url }) => url === settings.haConnection
+          )}
           url={hassUrl}
           setAuth={setHassAuth}
           setConfig={setHassConfig}
           setConnection={setHassConnection}
           setEntities={setHassEntities}
+          setUser={setUser}
         />
       )}
     </>

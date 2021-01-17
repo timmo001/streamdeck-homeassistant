@@ -1,7 +1,6 @@
 import { useEffect, useCallback } from "react";
 import {
   Auth,
-  AuthData,
   callService,
   Connection,
   createConnection,
@@ -24,6 +23,7 @@ interface HomeAssistantProps {
   setConfig: (config: HassConfig) => void;
   setConnection: (connected: ProgressState) => void;
   setEntities: (entities: HassEntities) => void;
+  setUser: (user: HassUser) => void;
 }
 
 export interface HomeAssistantEntityProps {
@@ -45,7 +45,7 @@ export interface HomeAssistantChangeProps {
   ) => void;
 }
 
-let connection: Connection, auth: Auth;
+let connection: Connection;
 
 export function handleChange(
   domain: string,
@@ -133,6 +133,7 @@ function HomeAssistant(props: HomeAssistantProps): any {
         subscribeEntities(connection, updateEntites);
         getUser(connection).then((user: HassUser) => {
           console.log("Logged into Home Assistant as", user.name);
+          props.setUser(user);
         });
         props.setConnection(2);
       })();
