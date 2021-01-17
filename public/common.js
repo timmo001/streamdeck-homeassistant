@@ -787,7 +787,7 @@ const StreamDeck = (function() {
       if (lang) {
         loadLocalization(
           lang,
-          inMessageType === "registerPropertyInspector" ? "../" : "./",
+          inMessageType === "registerPropertyInspector" ? "./" : "./",
           function() {
             events.emit("localizationLoaded", { language: lang });
           }

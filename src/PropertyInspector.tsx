@@ -48,7 +48,7 @@ export default function PropertyInspector() {
 
   function handleAddHaConnection() {
     console.log("Add HA connection..");
-    window.open("../setupConnection/index.html");
+    window.open("./setup-connection.html");
   }
 
   const haInstances: SDSelectOption[] = [

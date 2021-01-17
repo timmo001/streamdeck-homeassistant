@@ -40,7 +40,7 @@ export default function SetupConnection() {
           </div>
           <div id="content">
             {/* @ts-ignore */}
-            <p>${lox("setupConnectionDescription")}</p>
+            <p>{lox("setupConnectionDescription")}</p>
             <img
               className="image"
               src="https://brands.home-assistant.io/homeassistant/icon.png"

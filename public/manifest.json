@@ -23,7 +23,7 @@
     }
   ],
   "CodePath": "code.html",
-  "PropertyInspectorPath": "index.html",
+  "PropertyInspectorPath": "property-inspector.html",
   "OS": [
     {
       "Platform": "mac",
