@@ -8,37 +8,32 @@ import {
   HassUser,
 } from "home-assistant-js-websocket";
 
-import { HassConnectionState, SettingHassConnection } from "./Types";
+import { HassConnectionState, SettingHaConnection } from "./Types";
 import PropertyInspector from "./PropertyInspector";
 import SetupConnection from "./SetupConnection";
 import HomeAssistant, {
   handleChange as handleHassChange,
 } from "./HomeAssistant/HomeAssistant";
 
-const createGetSettings = (sd: any) => () => {
-  if (sd.api.getSettings) {
-    sd.api.getSettings(sd.uuid);
-  } else {
-    sd.api.common.getSettings(sd.uuid);
-  }
-};
-
 const useSDAction = createUseSDAction({
   useState,
   useEffect,
 });
 
+const usePluginSettings = createUsePluginSettings({
+  useState,
+  useEffect,
+  useReducer,
+});
+
 export default function App() {
   const connectedResult = useSDAction("connected");
 
-  const [settings, setSettings] = createUsePluginSettings({
-    useState,
-    useEffect,
-    useReducer,
-  })(
+  const [settings, setSettings] = usePluginSettings(
     {
       haConnections: [],
       haConnection: "",
+      textState: "",
     },
     connectedResult
   );
@@ -63,26 +58,19 @@ export default function App() {
   );
 
   useEffect(() => {
-    // @ts-ignore
-    createGetSettings($SD);
-  }, []);
-
-  useEffect(() => {
     if (hassConnectionState === 0 && hassUser && page === "setup-connection") {
-      const connections: SettingHassConnection[] = settings.haConnections || [];
+      const connections: SettingHaConnection[] = settings.haConnections || [];
       connections.push({
         name: `${hassConfig.location_name} - ${hassUser.name}`,
         authToken: hassAuthToken,
         url: hassUrl,
       });
+      // $SD.api.common.setSettings({
       setSettings({
         ...settings,
-        hassConnections: connections,
-        hassConnection: hassUrl,
+        haConnections: connections,
+        haConnection: hassUrl,
       });
-      setTimeout(() => {
-        window.close();
-      }, 1000);
     }
     // if (hassConnection === -2) {
     //   const haUrl = localStorage.getItem("hass_url");
@@ -93,6 +81,13 @@ export default function App() {
     // }
   }, [hassConnectionState, hassUser]);
 
+  useEffect(() => {
+    if (hassConnectionState === 0 && settings.haConnection === hassUrl)
+      setTimeout(() => {
+        window.close();
+      }, 2000);
+  }, [hassConnectionState, settings]);
+
   async function handleHassLogin(
     url: string,
     authToken: string
@@ -102,10 +97,13 @@ export default function App() {
     setHassConnectionState(-1);
   }
 
+  // @ts-ignore
+  console.log("App:", { connectedResult, $SD, settings });
+
   return (
     <>
       {page === "property-inspector" ? (
-        <PropertyInspector />
+        <PropertyInspector settings={settings} setSettings={setSettings} />
       ) : page === "setup-connection" ? (
         <SetupConnection
           hassConnectionState={hassConnectionState}

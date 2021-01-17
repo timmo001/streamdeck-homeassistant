@@ -120,7 +120,6 @@ function HomeAssistant(props: HomeAssistantProps): any {
   const connectToHASS = useCallback(() => {
     if (!connection)
       (async (): Promise<void> => {
-        props.setConnection(-1);
         const auth = createLongLivedTokenAuth(props.url, props.authToken);
         try {
           connection = await createConnection({ auth });

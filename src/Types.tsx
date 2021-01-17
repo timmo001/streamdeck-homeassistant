@@ -15,18 +15,18 @@ export type ProgressState = -2 | -1 | 1 | 2;
 // 6 - Unknown Error
 export type HassConnectionState = -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-export interface Settings {
-  numberState: number;
-  selectState: string;
-  textState: string;
-}
-
 export interface Option {
   label: string;
   value: string;
 }
 
-export interface SettingHassConnection {
+export interface Settings {
+  haConnections: SettingHaConnection[];
+  haConnection: string;
+  textState: string;
+}
+
+export interface SettingHaConnection {
   name: string;
   authToken: string;
   url: string;

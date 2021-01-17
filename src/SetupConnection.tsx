@@ -66,8 +66,21 @@ export default function SetupConnection({
                 handleHassLogin(url, authToken);
               }}
             />
-            <h4 style={{ color: "red" }}>
-              {hassConnectionState === 1
+            <h4
+              style={{
+                color:
+                  hassConnectionState === -1
+                    ? "white"
+                    : hassConnectionState === 0
+                    ? "green"
+                    : "red",
+              }}
+            >
+              {hassConnectionState === -1
+                ? "Connecting.."
+                : hassConnectionState === 0
+                ? "Connected!"
+                : hassConnectionState === 1
                 ? "Connection Error"
                 : hassConnectionState === 2
                 ? "Invalid Authentication"

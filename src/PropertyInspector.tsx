@@ -1,54 +1,25 @@
 /* global $SD, lox */
-import React, { useState, useEffect, useReducer, useMemo } from "react";
+import React, { Dispatch, SetStateAction, useEffect, useMemo } from "react";
 
-import {
-  createUsePluginSettings,
-  createUseSDAction,
-  SDSelectInput,
-} from "react-streamdeck";
+import { SDSelectInput, SDTextInput } from "react-streamdeck";
 
-import { Option } from "./Types";
+import { Option, Settings } from "./Types";
 
-const createGetSettings = (sd: any) => () => {
-  if (sd.api.getSettings) {
-    sd.api.getSettings(sd.uuid);
-  } else {
-    sd.api.common.getSettings(sd.uuid);
-  }
-};
+interface PropertyInspectorProps {
+  settings: Settings;
+  setSettings: Dispatch<SetStateAction<Settings>>;
+}
 
-const useSDAction = createUseSDAction({
-  useState,
-  useEffect,
-});
-
-export default function PropertyInspector() {
-  const connectedResult = useSDAction("connected");
-  const sendToPropertyInspectorResult = useSDAction("sendToPropertyInspector");
-
-  const [settings, setSettings] = createUsePluginSettings({
-    useState,
-    useEffect,
-    useReducer,
-  })(
-    {
-      haConnections: [],
-      haConnection: "",
-    },
-    connectedResult
-  );
-
-  useEffect(() => {
-    // @ts-ignore
-    createGetSettings($SD);
-  }, []);
-
+export default function PropertyInspector({
+  settings,
+  setSettings,
+}: PropertyInspectorProps) {
   function handleAddHaConnection() {
     console.log("Add HA connection..");
     window.open("./setup-connection.html");
   }
 
-  const haInstances: Option[] = useMemo(
+  const haConnections: Option[] = useMemo(
     () => [
       ...settings.haConnections.map(({ name, url }) => ({
         label: `${name} - ${url}`,
@@ -57,16 +28,22 @@ export default function PropertyInspector() {
       // @ts-ignore
       { label: lox("haConnectionAdd"), value: "add" },
     ],
-    [settings.haConnections]
+    // @ts-ignore
+    [lox, settings.haConnections]
   );
 
-  console.log({
+  const selectedHaConnection: string = useMemo(() => {
+    const connection: Option = haConnections.find(
+      ({ value }: Option) => value === settings.haConnection
+    );
+    return connection ? connection.value : "";
+  }, [haConnections, settings]);
+
+  console.log("PropertyInspector:", {
     // @ts-ignore
     $SD,
-    connectedResult,
-    sendToPropertyInspectorResult,
     settings,
-    haInstances,
+    haConnections,
   });
 
   return (
@@ -74,16 +51,29 @@ export default function PropertyInspector() {
       <SDSelectInput
         // @ts-ignore
         label={lox("haConnection")}
-        selectedOption={settings.selectState}
-        options={haInstances}
-        onChange={(value) =>
+        selectedOption={selectedHaConnection}
+        options={haConnections}
+        onChange={(value) => {
           value === "add"
             ? handleAddHaConnection()
             : setSettings({
                 ...settings,
                 haConnection: value,
-              })
-        }
+              });
+          return {};
+        }}
+      />
+      <SDTextInput
+        value={settings.textState}
+        label="Testing"
+        onChange={(event) => {
+          const newState = {
+            ...settings,
+            textState: event.target.value,
+          };
+          setSettings(newState);
+          return {};
+        }}
       />
     </div>
   );
