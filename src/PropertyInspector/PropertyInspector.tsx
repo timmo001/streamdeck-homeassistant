@@ -1,7 +1,7 @@
-import React, { useCallback, useEffect } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
-import { SettingHaConnection } from "../common/types";
-import { StreamDeckPropertyInspector } from "../common/StreamDeck";
+import { SettingHaConnection } from "../Common/Types";
+import { StreamDeckPropertyInspector } from "../Common/StreamDeck";
 import PropertyView from "./PropertyView";
 
 const sdPropertyInspector = new StreamDeckPropertyInspector();

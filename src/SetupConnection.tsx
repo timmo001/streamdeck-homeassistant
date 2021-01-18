@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 
-import { HassConnectionState } from "./common/types";
+import { HassConnectionState } from "./Common/Types";
 
 interface SetupConnectionProps {
   hassConnectionState: HassConnectionState;

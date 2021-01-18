@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 
-import { Option } from "../common/types";
-import { StreamDeckPropertyInspector } from "../common/StreamDeck";
+import { Option } from "../Common/Types";
+import { StreamDeckPropertyInspector } from "../Common/StreamDeck";
 
 interface PropertyViewProps {
   sdPropertyInspector: StreamDeckPropertyInspector;
@@ -48,7 +48,7 @@ export default function PropertyView({
     return connection ? connection.value : "";
   }, [haConnections, sdPropertyInspector.settings]);
 
-  console.log("PropertyInspector:", {
+  console.log("PropertyView:", {
     NODE_ENV: process.env.NODE_ENV,
     sdPropertyInspector,
   });
@@ -78,6 +78,37 @@ export default function PropertyView({
             </option>
           ))}
         </select>
+      </div>
+      <div className="sdpi-item">
+        <label className="sdpi-item-label" htmlFor="ha-entity">
+          Entity
+        </label>
+        <input
+          className="sdpi-item-value"
+          name="ha-entity"
+          value={sdPropertyInspector.settings.haEntity}
+          onChange={(event) =>
+            sdPropertyInspector.currentInstance.setSetting(
+              "haEntity",
+              event.target.value
+            )
+          }
+        />
+        {/* <select
+          className="sdpi-item-value select"
+          name="ha-entity"
+          value={sdPropertyInspector.settings.haEntity}
+          onChange={(event) =>
+            event.target.value === "add"
+              ? handleAddHaConnection()
+              : sdPropertyInspector.currentInstance.setSetting(
+                  "haEntity",
+                  event.target.value
+                )
+          }
+        >
+          <option value="">Select an entity..</option>
+        </select> */}
       </div>
     </div>
   );

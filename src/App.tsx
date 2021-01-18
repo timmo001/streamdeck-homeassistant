@@ -6,7 +6,7 @@ import {
   HassUser,
 } from "home-assistant-js-websocket";
 
-import { HassConnectionState, SettingHaConnection } from "./common/types";
+import { HassConnectionState, SettingHaConnection } from "./Common/Types";
 import PropertyInspector from "./PropertyInspector/PropertyInspector";
 import SetupConnection from "./SetupConnection";
 import HomeAssistant, {

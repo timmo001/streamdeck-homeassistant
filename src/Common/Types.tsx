@@ -26,6 +26,7 @@ export interface GlobalSettings {
 
 export interface Settings {
   haConnection?: string;
+  haEntity?: string;
 }
 
 export interface SettingHaConnection {
