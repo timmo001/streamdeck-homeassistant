@@ -34,14 +34,6 @@ export default function App() {
   );
 
   useEffect(() => {
-    // if (!localizedStrings || !localizedStrings["setupConnectionTitle"]) {
-    //   var url = new URL(window.location.href);
-    //   var language = url.searchParams.get("language");
-    //   if (language) loadLocalization(language, "./");
-    // }
-  }, []);
-
-  useEffect(() => {
     if (
       page === "setup-connection" &&
       hassConnectionState === 0 &&
@@ -57,9 +49,7 @@ export default function App() {
         detail: connection,
       });
       window.opener.document.dispatchEvent(event);
-      setTimeout(() => {
-        window.close();
-      }, 2000);
+      window.close();
     }
     // if (hassConnection === -2) {
     //   const haUrl = localStorage.getItem("hass_url");
@@ -79,16 +69,9 @@ export default function App() {
     setHassConnectionState(-1);
   }
 
-  // console.log("App:", {
-  //   streamDeck,
-  //   connectedResult,
-  //   globalSettings,
-  //   settings,
-  // });
-
   return (
     <>
-      <h2>Hello PI!</h2>
+      <p>Hello PI!</p>
       {page === "property-inspector" ? (
         <PropertyInspector />
       ) : page === "setup-connection" ? (

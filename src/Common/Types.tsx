@@ -21,12 +21,11 @@ export interface Option {
 }
 
 export interface GlobalSettings {
-  haConnections: SettingHaConnection[];
+  haConnections?: SettingHaConnection[];
 }
 
 export interface Settings {
-  haConnection: string;
-  textState: string;
+  haConnection?: string;
 }
 
 export interface SettingHaConnection {

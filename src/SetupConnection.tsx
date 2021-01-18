@@ -38,6 +38,7 @@ export default function SetupConnection({
             </p>
             <img
               className="image"
+              alt="Home Assistant Logo"
               src="https://brands.home-assistant.io/homeassistant/icon.png"
             />
             <SDTextInput

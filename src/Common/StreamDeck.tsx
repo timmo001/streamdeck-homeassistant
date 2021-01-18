@@ -492,12 +492,19 @@ enum EventsSent {
 }
 
 abstract class StreamDeck {
-  static initialized = false;
-  websocket: WebSocket;
-  uuid: string;
   private instances: StreamDeckInstance[] = [];
-  globalSettings: GlobalSettings;
-  settings: Settings;
+  static initialized = false;
+  actionInfo: any;
+  currentInstance: StreamDeckInstance;
+  globalSettings: GlobalSettings = {};
+  info: any;
+  language: string;
+  platform: string;
+  pluginVersion: string;
+  settings: Settings = {};
+  uuid: string;
+  version: string;
+  websocket: WebSocket;
 
   static async fileToBase64(file: File) {
     return new Promise((resolve, reject) => {
@@ -540,9 +547,21 @@ abstract class StreamDeck {
         uuid: this.uuid,
       });
 
-      /**
-       * When initializing with action info then initialize asap
-       */
+      if (process.env.NODE_ENV === "development")
+        console.log("StreamDeck - init:", {
+          actionInfo,
+          info,
+          inPort,
+          inRegisterEvent,
+          inUUID,
+        });
+
+      if (info) {
+        this.language = info.application.language;
+        this.platform = info.application.platform;
+        this.version = info.application.version;
+        if (info.plugin) this.pluginVersion = info.plugin.version;
+      }
       if (actionInfo) {
         this.globalSettings = actionInfo.payload.globalSettings;
         this.settings = actionInfo.payload.settings;
@@ -558,10 +577,23 @@ abstract class StreamDeck {
       }
     };
 
+    this.addEventListener(EventsReceived.INIT, (event) => {
+      this.currentInstance = event.detail.instance;
+      this.currentInstance.getGlobalSettings();
+      this.currentInstance.getSettings();
+    });
+
     this.websocket.onmessage = (message) => {
       const jsonObj: any = JSON.parse(message.data);
       const event = jsonObj["event"];
-      const payload = jsonObj["payload"] || {};
+      //   const payload = jsonObj["payload"] || {};
+
+      //   if (process.env.NODE_ENV === "development")
+      //     console.log("StreamDeck - WS Message Received:", {
+      //       jsonObj,
+      //       event,
+      //       payload,
+      //     });
 
       if (typeof this[event] === "function") {
         this[event](jsonObj);
@@ -645,17 +677,17 @@ abstract class StreamDeck {
 
   didReceiveGlobalSettings(data: DidReceiveGlobalSettingsEvent) {
     if (process.env.NODE_ENV === "development")
-      console.log("didReceiveGlobalSettings:", { data });
+      console.log("StreamDeck Event - didReceiveGlobalSettings:", { data });
     this.globalSettings = data.payload.settings;
   }
 
   didReceiveSettings(data: DidReceiveSettingsEvent) {
     if (process.env.NODE_ENV === "development")
-      console.log("didReceiveSettings:", { data });
+      console.log("StreamDeck Event - didReceiveSettings:", { data });
     this.settings = data.payload.settings;
   }
 
-  send(data) {
+  send(data: { event: string; uuid: string }) {
     this.websocket.send(JSON.stringify(data));
   }
 
@@ -1018,7 +1050,8 @@ abstract class StreamDeckInstance extends StreamDeck {
     this.uuid = uuid;
   }
 
-  setSetting(key: keyof GlobalSettings, value: any) {
+  setSetting(key: keyof Settings, value: any) {
+    if (!this.settings) this.settings = {};
     this.settings[key] = value;
     this.sendEvent(EventsSent.SET_SETTINGS, this.settings);
   }
@@ -1041,7 +1074,8 @@ abstract class StreamDeckInstance extends StreamDeck {
     });
   }
 
-  setGlobalSetting(key: keyof Settings, value: any) {
+  setGlobalSetting(key: keyof GlobalSettings, value: any) {
+    if (!this.globalSettings) this.globalSettings = {};
     this.globalSettings[key] = value;
     this.sendEvent(
       EventsSent.SET_GLOBAL_SETTINGS,
@@ -1050,7 +1084,7 @@ abstract class StreamDeckInstance extends StreamDeck {
     );
   }
 
-  setGlobalSettings(settings: Settings) {
+  setGlobalSettings(settings: GlobalSettings) {
     this.sendEvent(EventsSent.SET_GLOBAL_SETTINGS, settings, this.uuid);
   }
 

@@ -1,35 +1,32 @@
 import React, { useCallback, useEffect, useMemo } from "react";
-import { SDSelectInput, SDTextInput } from "react-streamdeck";
+import { SDSelectInput } from "react-streamdeck";
 
-import {
-  Option,
-  SettingHaConnection,
-  Settings,
-  GlobalSettings,
-} from "./Common/Types";
+import { Option, SettingHaConnection } from "./Common/Types";
 import { StreamDeckPropertyInspector } from "./Common/StreamDeck";
 
 const sdPropertyInspector = new StreamDeckPropertyInspector();
-// sdPropertyInspector.enableSettingManager();
 
 export default function PropertyInspector() {
   const saveConnection = useCallback(
     (inEvent: CustomEvent<SettingHaConnection>) => {
-      console.log("saveConnection Event:", inEvent);
       const connection: SettingHaConnection = inEvent.detail;
+      console.log("PropertyInspector Event - saveConnection:", {
+        connection,
+        sdPropertyInspector,
+      });
       const connections: SettingHaConnection[] =
-        sdPropertyInspector.globalSettings.haConnections || [];
+        sdPropertyInspector.globalSettings?.haConnections || [];
       connections.push(connection);
-      // sdPropertyInspector.setGlobalSetting("haConnections", connections);
-      // sdPropertyInspector.setSetting("haConnection", connection.url);
-      // setGlobalSettings({
-      //   ...globalSettings,
-      //   haConnections: connections,
-      // });
-      // setSettings({
-      //   ...settings,
-      //   haConnection: connection.url,
-      // });
+      sdPropertyInspector.currentInstance.setGlobalSetting(
+        "haConnections",
+        connections
+      );
+      sdPropertyInspector.currentInstance.setSetting(
+        "haConnection",
+        connection.url
+      );
+      sdPropertyInspector.globalSettings.haConnections = connections;
+      sdPropertyInspector.settings.haConnection = connection.url;
     },
     []
   );
@@ -40,9 +37,9 @@ export default function PropertyInspector() {
 
   function handleAddHaConnection() {
     console.log("Add HA connection..");
-    // window.open(
-    //   `./setup-connection.html?language=${streamDeck.applicationInfo.application.language}&streamDeckVersion=${streamDeck.applicationInfo.application.version}&pluginVersion=${streamDeck.applicationInfo.plugin.version}`
-    // );
+    window.open(
+      `./setup-connection.html?language=${sdPropertyInspector.language}&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${sdPropertyInspector.pluginVersion}`
+    );
   }
 
   const haConnections: Option[] = useMemo(
@@ -59,7 +56,7 @@ export default function PropertyInspector() {
             { label: `lox("haConnectionAdd")`, value: "add" },
           ]
         : [{ label: `lox("haConnectionAdd")`, value: "add" }],
-    []
+    [sdPropertyInspector.globalSettings]
   );
 
   const selectedHaConnection: string = useMemo(() => {
@@ -75,7 +72,6 @@ export default function PropertyInspector() {
   console.log("PropertyInspector:", {
     NODE_ENV: process.env.NODE_ENV,
     sdPropertyInspector,
-    haConnections,
   });
 
   return (
