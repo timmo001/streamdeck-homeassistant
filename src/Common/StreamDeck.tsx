@@ -1,3 +1,4 @@
+/* globals $SD */
 import { debugLog, DestinationEnum, loadLocalization } from "./Common";
 import ELGEvents from "./ELGEvents";
 import { getProp } from "./Utils";
@@ -92,6 +93,7 @@ const SDDebug = {
  * @param {string} inActionInfo - Context is an internal identifier used to communicate to the host application.
  */
 export function connectElgatoStreamDeckSocket(
+  streamDeck: any,
   inPort: any,
   inUUID: any,
   inMessageType: string | number,
@@ -105,16 +107,18 @@ export function connectElgatoStreamDeckSocket(
     inApplicationInfo,
     inActionInfo,
   });
-  StreamDeck.getInstance().connect(arguments);
+  StreamDeck.getInstance().sd.connect(arguments);
   streamDeck.api = Object.assign(
     { send: SDApi.send },
     SDApi.common,
     SDApi[inMessageType]
   );
+  return streamDeck;
 }
 
 // /* legacy support */
-// export function connectSocket(
+// function connectSocket(
+//   streamDeck: any,
 //   inPort: any,
 //   inUUID: any,
 //   inMessageType: any,
@@ -122,6 +126,7 @@ export function connectElgatoStreamDeckSocket(
 //   inActionInfo: any
 // ) {
 //   connectElgatoStreamDeckSocket(
+//     streamDeck,
 //     inPort,
 //     inUUID,
 //     inMessageType,
@@ -143,23 +148,27 @@ export function connectElgatoStreamDeckSocket(
  * communication with SD-Software and the Property Inspector
  */
 export const StreamDeck = ((debug?: boolean) => {
-  // Hello it's me
   let instance: {
-    emit: any;
-    connection: any;
-    uuid?: any;
-    on?: (name: any, fn: any) => any;
-    connect?: (args: any) => void;
-    api?: any;
-    logger?: { logEvent: (jsn: any) => void; logSomething: () => void };
-    actionInfo?: any;
-    applicationInfo?: any;
-    messageType?: string;
+    sd: {
+      emit: any;
+      connection: any;
+      uuid?: any;
+      on?: (name: any, fn: any) => any;
+      connect?: (args: any) => void;
+      api?: any;
+      logger?: { logEvent: (jsn: any) => void; logSomething: () => void };
+      actionInfo?: any;
+      applicationInfo?: any;
+      messageType?: string;
+    };
   };
-  /*
-        Populate and initialize internally used properties
-      */
+  /**
+   * Populate and initialize internally used properties
+   */
   function init() {
+    // @ts-ignore
+    let sd = $SD;
+
     // *** PRIVATE ***
     let inPort: string,
       inUUID: any,
@@ -220,7 +229,7 @@ export const StreamDeck = ((debug?: boolean) => {
 
       websocket = new WebSocket("ws://localhost:" + inPort);
 
-      websocket.onopen = function() {
+      websocket.onopen = () => {
         let json = {
           event: inMessageType,
           uuid: inUUID,
@@ -228,13 +237,13 @@ export const StreamDeck = ((debug?: boolean) => {
 
         // console.log('***************', inMessageType + "  websocket:onopen", inUUID, json);
         websocket.sendJSON(json);
-        streamDeck.uuid = inUUID;
-        streamDeck.actionInfo = inActionInfo;
-        streamDeck.applicationInfo = inApplicationInfo;
-        streamDeck.messageType = inMessageType;
-        streamDeck.connection = websocket;
+        sd.uuid = inUUID;
+        sd.actionInfo = inActionInfo;
+        sd.applicationInfo = inApplicationInfo;
+        sd.messageType = inMessageType;
+        sd.connection = websocket;
 
-        instance.emit("connected", {
+        instance.sd.emit("connected", {
           connection: websocket,
           port: inPort,
           uuid: inUUID,
@@ -244,17 +253,17 @@ export const StreamDeck = ((debug?: boolean) => {
         });
       };
 
-      websocket.onerror = function(evt: { data: any }) {
+      websocket.onerror = (evt: { data: any }) => {
         console.warn("WEBOCKET ERROR", evt, evt.data);
       };
 
-      websocket.onclose = function(evt: any) {
+      websocket.onclose = (evt: any) => {
         // Websocket is closed
         let reason = WEBSOCKETERROR(evt);
         console.warn("[STREAMDECK]***** WEBOCKET CLOSED **** reason:", reason);
       };
 
-      websocket.onmessage = function(evt: { data: string }) {
+      websocket.onmessage = (evt: { data: string }) => {
         let jsonObj = JSON.parse(evt.data),
           m: string;
 
@@ -283,18 +292,20 @@ export const StreamDeck = ((debug?: boolean) => {
         if (m && m !== "") events.emit(m, jsonObj);
       };
 
-      instance.connection = websocket;
+      instance.sd.connection = websocket;
     }
 
     return {
       // *** PUBLIC ***
-      uuid: inUUID,
-      on: events.on,
-      emit: events.emit,
-      connection: websocket,
-      connect: connect,
-      api: null,
-      logger: logger,
+      sd: {
+        uuid: inUUID,
+        on: events.on,
+        emit: events.emit,
+        connection: websocket,
+        connect: connect,
+        api: null,
+        logger: logger,
+      },
     };
   }
 
@@ -335,8 +346,9 @@ export const StreamDeck = ((debug?: boolean) => {
  * keyUp
  */
 
-const SDApi = {
+export const SDApi = {
   send: (
+    streamDeck: any,
     context: any,
     fn: string,
     payload: { [key: string]: any },
@@ -373,43 +385,48 @@ const SDApi = {
   },
   registerPlugin: {
     /** Messages send from the plugin */
-    showAlert: (context: any) => {
-      SDApi.send(context, "showAlert", {});
+    showAlert: (streamDeck: any, context: any) => {
+      SDApi.send(streamDeck, context, "showAlert", {});
     },
-    showOk: (context: any) => {
-      SDApi.send(context, "showOk", {});
+    showOk: (streamDeck: any, context: any) => {
+      SDApi.send(streamDeck, context, "showOk", {});
     },
-    setState: (context: any, payload: number) => {
-      SDApi.send(context, "setState", {
+    setState: (streamDeck: any, context: any, payload: number) => {
+      SDApi.send(streamDeck, context, "setState", {
         payload: {
           state: 1 - Number(payload === 0),
         },
       });
     },
-    setTitle: (context: any, title: string, target: any) => {
-      SDApi.send(context, "setTitle", {
+    setTitle: (streamDeck: any, context: any, title: string, target: any) => {
+      SDApi.send(streamDeck, context, "setTitle", {
         payload: {
           title: "" + title || "",
           target: target || DestinationEnum.HARDWARE_AND_SOFTWARE,
         },
       });
     },
-    setImage: (context: any, img: any, target: any) => {
-      SDApi.send(context, "setImage", {
+    setImage: (streamDeck: any, context: any, img: any, target: any) => {
+      SDApi.send(streamDeck, context, "setImage", {
         payload: {
           image: img || "",
           target: target || DestinationEnum.HARDWARE_AND_SOFTWARE,
         },
       });
     },
-    sendToPropertyInspector: (context: any, payload: any, action: any) => {
-      SDApi.send(context, "sendToPropertyInspector", {
+    sendToPropertyInspector: (
+      streamDeck: any,
+      context: any,
+      payload: any,
+      action: any
+    ) => {
+      SDApi.send(streamDeck, context, "sendToPropertyInspector", {
         action: action,
         payload: payload,
       });
     },
-    showUrl2: (context: any, urlToOpen: any) => {
-      SDApi.send(context, "openUrl", {
+    showUrl2: (streamDeck: any, context: any, urlToOpen: any) => {
+      SDApi.send(streamDeck, context, "openUrl", {
         payload: {
           url: urlToOpen,
         },
@@ -418,8 +435,9 @@ const SDApi = {
   },
   /** Messages send from Property Inspector */
   registerPropertyInspector: {
-    sendToPlugin: (piUUID: any, action: any, payload: any) => {
+    sendToPlugin: (streamDeck: any, piUUID: any, action: any, payload: any) => {
       SDApi.send(
+        streamDeck,
         piUUID,
         "sendToPlugin",
         {
@@ -432,23 +450,23 @@ const SDApi = {
   },
   /** COMMON */
   common: {
-    getSettings: (context: any, payload: any) => {
-      SDApi.send(context, "getSettings", {});
+    getSettings: (streamDeck: any, context: any, payload: any) => {
+      SDApi.send(streamDeck, context, "getSettings", {});
     },
-    setSettings: (context: any, payload: any) => {
-      SDApi.send(context, "setSettings", {
+    setSettings: (streamDeck: any, context: any, payload: any) => {
+      SDApi.send(streamDeck, context, "setSettings", {
         payload: payload,
       });
     },
-    getGlobalSettings: (context: any, payload: any) => {
-      SDApi.send(context, "getGlobalSettings", {});
+    getGlobalSettings: (streamDeck: any, context: any, payload: any) => {
+      SDApi.send(streamDeck, context, "getGlobalSettings", {});
     },
-    setGlobalSettings: (context: any, payload: any) => {
-      SDApi.send(context, "setGlobalSettings", {
+    setGlobalSettings: (streamDeck: any, context: any, payload: any) => {
+      SDApi.send(streamDeck, context, "setGlobalSettings", {
         payload: payload,
       });
     },
-    logMessage: function() {
+    logMessage: function(streamDeck: any) {
       /**
        * for logMessage we don't need a context, so we allow both
        * logMessage(unneededContext, 'message')
@@ -456,14 +474,14 @@ const SDApi = {
        * logMessage('message')
        */
       let payload = arguments.length > 1 ? arguments[1] : arguments[0];
-      SDApi.send(null, "logMessage", {
+      SDApi.send(streamDeck, null, "logMessage", {
         payload: {
           message: payload,
         },
       });
     },
-    openUrl: (context: any, urlToOpen: any) => {
-      SDApi.send(context, "openUrl", {
+    openUrl: (streamDeck: any, context: any, urlToOpen: any) => {
+      SDApi.send(streamDeck, context, "openUrl", {
         payload: {
           url: urlToOpen,
         },
@@ -474,16 +492,16 @@ const SDApi = {
       console.log(SDApi);
     },
 
-    debugPrint: function(context: any) {
+    debugPrint: function(streamDeck: any, context: any) {
       // console.log("------------ DEBUGPRINT");
       // console.log([].slice.apply(arguments).join());
       // console.log("------------ DEBUGPRINT");
-      SDApi.send(context, "debugPrint", {
+      SDApi.send(streamDeck, context, "debugPrint", {
         payload: [].slice.apply(arguments).join(".") || "",
       });
     },
 
-    dbgSend: function(fn: string | number, context: any) {
+    dbgSend: function(streamDeck: any, fn: string | number, context: any) {
       /** lookup if an appropriate function exists */
       if (streamDeck.connection && this[fn] && typeof this[fn] === "function") {
         /** verify if type of payload is an object/json */
@@ -498,21 +516,7 @@ const SDApi = {
   },
 };
 
-/**
- * This is the instance of the StreamDeck object.
- * There's only one StreamDeck object, which carries
- * connection parameters and handles communication
- * to/from the software's PluginManager.
- */
-const streamDeck = StreamDeck.getInstance();
-streamDeck.api = SDApi;
-
-streamDeck.on("connected", (jsonObj) => connected(jsonObj));
-streamDeck.on("deviceDidConnect", (jsonObj) =>
-  console.log("deviceDidConnect", jsonObj)
-);
-
-async function connected(jsn) {
+export async function SDConnected(streamDeck: any) {
   /** subscribe to the willAppear and other events */
   streamDeck.on("dev.timmo.homeassistant.action.willAppear", (jsonObj) =>
     action.onWillAppear(jsonObj)
@@ -538,7 +542,7 @@ export const action = {
       "color: white; background: red; font-size: 15px;",
       "[app.js]onDidReceiveSettings:"
     );
-    this.settings[jsonObj.context] = getProp(jsn, "payload.settings", {});
+    this.settings[jsn.context] = getProp(jsn, "payload.settings", {});
     this.doSomeThing(this.settings, "onDidReceiveSettings", "orange");
   },
 
@@ -564,10 +568,10 @@ export const action = {
      *
      * streamDeck.api.getSettings(jsn.context);
      */
-    this.settings[jsonObj.context] = jsn.payload.settings;
+    this.settings[jsn.context] = jsn.payload.settings;
   },
 
-  onKeyUp: async function(jsn) {
+  onKeyUp: async (jsn) => {
     console.log("onKeyUp", jsn);
   },
 
@@ -596,18 +600,18 @@ export const action = {
    * @param {JSON} jsn // the JSON object passed from Stream Deck to the plugin, which contains the plugin's context
    *
    */
-  setTitle: function(jsn) {
+  setTitle: function(streamDeck, jsn) {
     if (
-      this.settings[jsonObj.context] &&
-      this.settings[jsonObj.context].hasOwnProperty("mynameinput")
+      this.settings[jsn.context] &&
+      this.settings[jsn.context].hasOwnProperty("mynameinput")
     ) {
       console.log(
         "watch the key on your StreamDeck - it got a new title...",
-        this.settings[jsonObj.context].mynameinput
+        this.settings[jsn.context].mynameinput
       );
       streamDeck.api.setTitle(
         jsn.context,
-        this.settings[jsonObj.context].mynameinput
+        this.settings[jsn.context].mynameinput
       );
     }
   },
@@ -617,7 +621,7 @@ export const action = {
    * This is just an idea how you can act on receiving some interesting message
    * from Stream Deck.
    */
-  doSomeThing: function(inJsonData, caller, tagColor) {
+  doSomeThing: (inJsonData, caller, tagColor) => {
     console.log(
       "%c%s",
       `color: white; background: ${tagColor || "grey"}; font-size: 15px;`,
@@ -626,5 +630,19 @@ export const action = {
     console.log({ inJsonData });
   },
 };
+
+/**
+ * This is the instance of the StreamDeck object.
+ * There's only one StreamDeck object, which carries
+ * connection parameters and handles communication
+ * to/from the software's PluginManager.
+ */
+const streamDeck = StreamDeck.getInstance().sd;
+streamDeck.api = SDApi;
+
+streamDeck.on("connected", (jsonObj) => SDConnected(jsonObj));
+streamDeck.on("deviceDidConnect", (jsonObj) =>
+  console.log("deviceDidConnect", jsonObj)
+);
 
 export default streamDeck;

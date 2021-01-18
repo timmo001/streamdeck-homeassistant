@@ -5,14 +5,15 @@ import React, {
   useEffect,
   useMemo,
 } from "react";
-
 import { SDSelectInput, SDTextInput } from "react-streamdeck";
 
+import { lox } from "./Common/Common";
 import { Option, SettingHaConnection, Settings, GlobalSettings } from "./Types";
 
 interface PropertyInspectorProps {
   globalSettings: GlobalSettings;
   settings: Settings;
+  streamDeck: any;
   setGlobalSettings: Dispatch<SetStateAction<GlobalSettings>>;
   setSettings: Dispatch<SetStateAction<Settings>>;
 }
@@ -20,6 +21,7 @@ interface PropertyInspectorProps {
 export default function PropertyInspector({
   settings,
   setSettings,
+  streamDeck,
   globalSettings,
   setGlobalSettings,
 }: PropertyInspectorProps) {
@@ -48,21 +50,22 @@ export default function PropertyInspector({
 
   function handleAddHaConnection() {
     console.log("Add HA connection..");
-    window.open(
-      // @ts-ignore
-      `./setup-connection.html?language=${streamDeck.applicationInfo.application.language}&streamDeckVersion=${streamDeck.applicationInfo.application.version}&pluginVersion=${streamDeck.applicationInfo.plugin.version}`
-    );
+    // window.open(
+    //   `./setup-connection.html?language=${streamDeck.applicationInfo.application.language}&streamDeckVersion=${streamDeck.applicationInfo.application.version}&pluginVersion=${streamDeck.applicationInfo.plugin.version}`
+    // );
   }
 
   const haConnections: Option[] = useMemo(
-    () => [
-      ...globalSettings.haConnections.map(({ name, url }) => ({
-        label: name,
-        value: url,
-      })),
-      // @ts-ignore
-      { label: lox("haConnectionAdd"), value: "add" },
-    ],
+    () =>
+      globalSettings.haConnections
+        ? [
+            ...globalSettings.haConnections.map(({ name, url }) => ({
+              label: name,
+              value: url,
+            })),
+            { label: lox("haConnectionAdd"), value: "add" },
+          ]
+        : [{ label: lox("haConnectionAdd"), value: "add" }],
     [globalSettings.haConnections]
   );
 
@@ -74,7 +77,6 @@ export default function PropertyInspector({
   }, [haConnections, settings]);
 
   // console.log("PropertyInspector:", {
-  //   // @ts-ignore
   //   streamDeck,
   //   globalSettings,
   //   settings,
@@ -84,7 +86,6 @@ export default function PropertyInspector({
   return (
     <div>
       <SDSelectInput
-        // @ts-ignore
         label={lox("haConnection")}
         selectedOption={selectedHaConnection}
         options={haConnections}

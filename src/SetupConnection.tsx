@@ -1,5 +1,6 @@
 import React, { useState } from "react";
 import { SDButton, SDTextInput } from "react-streamdeck";
+import { lox } from "./Common/Common";
 
 import { HassConnectionState } from "./Types";
 
@@ -28,15 +29,12 @@ export default function SetupConnection({
           </div>
           <div className="header">
             <h1>
-              {// @ts-ignore
-              localizedStrings["setupConnectionTitle"] ||
-                "Connect to Home Assistant"}
+              {lox["setupConnectionTitle"] || "Connect to Home Assistant"}
             </h1>
           </div>
           <div id="content">
             <p>
-              {// @ts-ignore
-              localizedStrings["setupConnectionDescription"] ||
+              {lox["setupConnectionDescription"] ||
                 "Connect a Home Assistant instance to access and control your home."}
             </p>
             <img
@@ -45,8 +43,7 @@ export default function SetupConnection({
             />
             <SDTextInput
               value={url}
-              // @ts-ignore
-              label={localizedStrings["haUrl"] || "URL"}
+              label={lox["haUrl"] || "URL"}
               onChange={(event) => {
                 setUrl(event.target.value);
                 return {};
@@ -54,25 +51,19 @@ export default function SetupConnection({
             />
             <SDTextInput
               value={authToken}
-              label={
-                // @ts-ignore
-                localizedStrings["haAccessToken"] || "Long-Lived Access Token"
-              }
+              label={lox["haAccessToken"] || "Long-Lived Access Token"}
               onChange={(event) => {
                 setAuthToken(event.target.value);
                 return {};
               }}
             />
             <SDButton
-              disabled={!url || !url.startsWith("http") || !authToken}
-              text={
-                // @ts-ignore
-                localizedStrings["setupConnectionStart"] || "Connect"
-              }
-              // @ts-ignore
+              // disabled={!url || !url.startsWith("http") || !authToken}
+              text={lox["setupConnectionStart"] || "Connect"}
               onClick={(_event: any) => {
                 console.log("Setup Connection - Connection");
                 handleHassLogin(url, authToken);
+                return {};
               }}
             />
             <h4

@@ -84,7 +84,7 @@ export default async function hassCallApi<T>(
 
   if (parameters) {
     // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
+
     init.headers["Content-Type"] = "application/json;charset=UTF-8";
     init.body = JSON.stringify(parameters);
   }

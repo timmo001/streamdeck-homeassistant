@@ -1,10 +1,5 @@
 import React, { useEffect, useState, useReducer, useMemo } from "react";
 import {
-  createUseGlobalSettings,
-  createUsePluginSettings,
-  createUseSDAction,
-} from "react-streamdeck";
-import {
   Auth,
   HassConfig,
   HassEntities,
@@ -19,6 +14,11 @@ import HomeAssistant, {
 } from "./HomeAssistant/HomeAssistant";
 import { loadLocalization, localizedStrings } from "./Common/Common";
 import streamDeck from "./Common/StreamDeck";
+import createUseSDAction from "./Common/Hooks/action";
+import {
+  createUseGlobalSettings,
+  createUsePluginSettings,
+} from "./Common/Hooks/settings";
 
 const useSDAction = createUseSDAction({
   useState,
@@ -30,6 +30,7 @@ const usePluginGlobalSettings = createUseGlobalSettings({
   useEffect,
   useReducer,
 });
+
 const usePluginSettings = createUsePluginSettings({
   useState,
   useEffect,
@@ -37,9 +38,10 @@ const usePluginSettings = createUsePluginSettings({
 });
 
 export default function App() {
-  const connectedResult = useSDAction("connected");
+  const connectedResult = useSDAction(streamDeck, "connected");
 
   const [globalSettings, setGlobalSettings] = usePluginGlobalSettings(
+    streamDeck,
     {
       haConnections: [],
     },
@@ -47,6 +49,7 @@ export default function App() {
   );
 
   const [settings, setSettings] = usePluginSettings(
+    streamDeck,
     {
       haConnection: "",
       textState: "",
@@ -132,6 +135,7 @@ export default function App() {
         <PropertyInspector
           globalSettings={globalSettings}
           settings={settings}
+          streamDeck={streamDeck}
           setGlobalSettings={setGlobalSettings}
           setSettings={setSettings}
         />
