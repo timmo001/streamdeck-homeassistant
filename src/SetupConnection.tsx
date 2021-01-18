@@ -40,50 +40,72 @@ export default function SetupConnection({
               alt="Home Assistant Logo"
               src="https://brands.home-assistant.io/homeassistant/icon.png"
             />
-            <label>{`lox["haUrl"]` || "URL"}</label>
-            <input
-              value={url}
-              onChange={(event) => setUrl(event.target.value)}
-            />
-            <label>{`lox["haAccessToken"]` || "Long-Lived Access Token"}</label>
-            <input
-              value={authToken}
-              onChange={(event) => setAuthToken(event.target.value)}
-            />
-            <button
-              disabled={!url || !url.startsWith("http") || !authToken}
-              onClick={(_event: any) => handleHassLogin(url, authToken)}
-            >
-              {`lox["setupConnectionStart"]` || "Connect"}
-            </button>
-            <h4
-              style={{
-                color:
-                  hassConnectionState === -1
-                    ? "white"
+            <div className="sdpi-wrapper" id="pi">
+              <div className="sdpi-item">
+                <label className="sdpi-item-label" htmlFor="ha-access-token">
+                  {`lox["haUrl"]` || "URL"}
+                </label>
+                <input
+                  name="ha-url"
+                  value={url}
+                  onChange={(event) => setUrl(event.target.value)}
+                />
+              </div>
+              <div className="sdpi-item">
+                <label className="sdpi-item-label" htmlFor="ha-access-token">
+                  Long-Lived Access Token
+                </label>
+                <input
+                  name="ha-access-token"
+                  value={authToken}
+                  onChange={(event) => setAuthToken(event.target.value)}
+                />
+              </div>
+              <div className="sdpi-item">
+                <button
+                  disabled={!url || !url.startsWith("http") || !authToken}
+                  onClick={(_event: any) => handleHassLogin(url, authToken)}
+                >
+                  Connect
+                </button>
+              </div>
+              <div className="sdpi-item">
+                <h4
+                  style={{
+                    color:
+                      hassConnectionState === -1
+                        ? "white"
+                        : hassConnectionState === 0
+                        ? "green"
+                        : "red",
+                  }}
+                >
+                  {hassConnectionState === -2
+                    ? !url || !url.startsWith("http")
+                      ? "Invalid URL"
+                      : !authToken
+                      ? "Enter Long-Lived Access Token"
+                      : ""
+                    : hassConnectionState === -1
+                    ? "Connecting.."
                     : hassConnectionState === 0
-                    ? "green"
-                    : "red",
-              }}
-            >
-              {hassConnectionState === -1
-                ? "Connecting.."
-                : hassConnectionState === 0
-                ? "Connected!"
-                : hassConnectionState === 1
-                ? "Connection Error"
-                : hassConnectionState === 2
-                ? "Invalid Authentication"
-                : hassConnectionState === 3
-                ? "Connection Lost"
-                : hassConnectionState === 4
-                ? "Host Required"
-                : hassConnectionState === 5
-                ? "Invalid HTTPS to HTTP (HTTPS URL Required)"
-                : hassConnectionState === 6
-                ? "Unknown Error"
-                : ""}
-            </h4>
+                    ? "Connected!"
+                    : hassConnectionState === 1
+                    ? "Connection Error"
+                    : hassConnectionState === 2
+                    ? "Invalid Authentication"
+                    : hassConnectionState === 3
+                    ? "Connection Lost"
+                    : hassConnectionState === 4
+                    ? "Host Required"
+                    : hassConnectionState === 5
+                    ? "Invalid HTTPS to HTTP (HTTPS URL Required)"
+                    : hassConnectionState === 6
+                    ? "Unknown Error"
+                    : ""}
+                </h4>
+              </div>
+            </div>
           </div>
         </div>
       </div>
