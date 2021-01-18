@@ -1,5 +1,5 @@
 // Originally Sourced from https://github.com/patrickbussmann/streamdeck-sdk/blob/51c1bd168c8aa23a714c51681f68f2fd62926933/StreamDeckSDK.ts
-import { GlobalSettings, Settings } from "./Types";
+import { GlobalSettings, Settings } from "./types";
 
 // @ts-ignore
 declare var global: any;

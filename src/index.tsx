@@ -1,8 +1,8 @@
 import React from "react";
 import ReactDOM from "react-dom";
 
-import "react-streamdeck/dist/css/sdpi.css";
-import "./index.css";
+import "./styles/sdpi.css";
+import "./styles/index.css";
 
 import App from "./App";
 

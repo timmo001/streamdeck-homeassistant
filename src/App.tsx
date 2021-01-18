@@ -6,8 +6,8 @@ import {
   HassUser,
 } from "home-assistant-js-websocket";
 
-import { HassConnectionState, SettingHaConnection } from "./Common/Types";
-import PropertyInspector from "./PropertyInspector";
+import { HassConnectionState, SettingHaConnection } from "./common/types";
+import PropertyInspector from "./PropertyInspector/PropertyInspector";
 import SetupConnection from "./SetupConnection";
 import HomeAssistant, {
   handleChange as handleHassChange,
@@ -17,9 +17,10 @@ export default function App() {
   const [hassAuth, setHassAuth] = useState<Auth>();
   const [hassAuthToken, setHassAuthToken] = useState<string>();
   const [hassConfig, setHassConfig] = useState<HassConfig>();
-  const [hassConnectionState, setHassConnectionState] = useState<
-    HassConnectionState
-  >(-2);
+  const [
+    hassConnectionState,
+    setHassConnectionState,
+  ] = useState<HassConnectionState>(-2);
   const [hassEntities, setHassEntities] = useState<HassEntities>();
   const [hassUser, setUser] = useState<HassUser>();
   const [hassUrl, setHassUrl] = useState<string>();
@@ -71,7 +72,6 @@ export default function App() {
 
   return (
     <>
-      <p>Hello PI!</p>
       {page === "property-inspector" ? (
         <PropertyInspector />
       ) : page === "setup-connection" ? (

@@ -13,7 +13,7 @@ import {
   subscribeEntities,
 } from "home-assistant-js-websocket";
 
-import { HassConnectionState } from "../Common/Types";
+import { HassConnectionState } from "../common/types";
 
 interface HomeAssistantProps {
   authToken: string;

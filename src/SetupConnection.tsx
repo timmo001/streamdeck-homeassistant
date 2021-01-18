@@ -1,7 +1,6 @@
 import React, { useState } from "react";
-import { SDButton, SDTextInput } from "react-streamdeck";
 
-import { HassConnectionState } from "./Common/Types";
+import { HassConnectionState } from "./common/types";
 
 interface SetupConnectionProps {
   hassConnectionState: HassConnectionState;
@@ -41,31 +40,22 @@ export default function SetupConnection({
               alt="Home Assistant Logo"
               src="https://brands.home-assistant.io/homeassistant/icon.png"
             />
-            <SDTextInput
+            <label>{`lox["haUrl"]` || "URL"}</label>
+            <input
               value={url}
-              label={`lox["haUrl"]` || "URL"}
-              onChange={(event) => {
-                setUrl(event.target.value);
-                return {};
-              }}
+              onChange={(event) => setUrl(event.target.value)}
             />
-            <SDTextInput
+            <label>{`lox["haAccessToken"]` || "Long-Lived Access Token"}</label>
+            <input
               value={authToken}
-              label={`lox["haAccessToken"]` || "Long-Lived Access Token"}
-              onChange={(event) => {
-                setAuthToken(event.target.value);
-                return {};
-              }}
+              onChange={(event) => setAuthToken(event.target.value)}
             />
-            <SDButton
-              // disabled={!url || !url.startsWith("http") || !authToken}
-              text={`lox["setupConnectionStart"]` || "Connect"}
-              onClick={(_event: any) => {
-                console.log("Setup Connection - Connection");
-                handleHassLogin(url, authToken);
-                return {};
-              }}
-            />
+            <button
+              disabled={!url || !url.startsWith("http") || !authToken}
+              onClick={(_event: any) => handleHassLogin(url, authToken)}
+            >
+              {`lox["setupConnectionStart"]` || "Connect"}
+            </button>
             <h4
               style={{
                 color:
