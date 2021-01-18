@@ -1,648 +1,1208 @@
-/* globals $SD */
-import { debugLog, DestinationEnum, loadLocalization } from "./Common";
-import ELGEvents from "./ELGEvents";
-import { getProp } from "./Utils";
+// Originally Sourced from https://github.com/patrickbussmann/streamdeck-sdk/blob/51c1bd168c8aa23a714c51681f68f2fd62926933/StreamDeckSDK.ts
+import { GlobalSettings, Settings } from "./Types";
 
-export function WEBSOCKETERROR(evt: { code: number; reason: string }) {
-  // Websocket is closed
-  let reason = "";
-  if (evt.code === 1000) {
-    reason =
-      "Normal Closure. The purpose for which the connection was established has been fulfilled.";
-  } else if (evt.code === 1001) {
-    reason =
-      'Going Away. An endpoint is "going away", such as a server going down or a browser having navigated away from a page.';
-  } else if (evt.code === 1002) {
-    reason =
-      "Protocol error. An endpoint is terminating the connection due to a protocol error";
-  } else if (evt.code === 1003) {
-    reason =
-      "Unsupported Data. An endpoint received a type of data it doesn't support.";
-  } else if (evt.code === 1004) {
-    reason =
-      "--Reserved--. The specific meaning might be defined in the future.";
-  } else if (evt.code === 1005) {
-    reason = "No Status. No status code was actually present.";
-  } else if (evt.code === 1006) {
-    reason =
-      "Abnormal Closure. The connection was closed abnormally, e.g., without sending or receiving a Close control frame";
-  } else if (evt.code === 1007) {
-    reason =
-      "Invalid frame payload data. The connection was closed, because the received data was not consistent with the type of the message (e.g., non-UTF-8 [http://tools.ietf.org/html/rfc3629]).";
-  } else if (evt.code === 1008) {
-    reason =
-      'Policy Violation. The connection was closed, because current message data "violates its policy". This reason is given either if there is no other suitable reason, or if there is a need to hide specific details about the policy.';
-  } else if (evt.code === 1009) {
-    reason =
-      "Message Too Big. Connection closed because the message is too big for it to process.";
-  } else if (evt.code === 1010) {
-    // Note that this status code is not used by the server, because it can fail the WebSocket handshake instead.
-    reason =
-      "Mandatory Ext. Connection is terminated the connection because the server didn't negotiate one or more extensions in the WebSocket handshake. <br /> Mandatory extensions were: " +
-      evt.reason;
-  } else if (evt.code === 1011) {
-    reason =
-      "Internl Server Error. Connection closed because it encountered an unexpected condition that prevented it from fulfilling the request.";
-  } else if (evt.code === 1015) {
-    reason =
-      "TLS Handshake. The connection was closed due to a failure to perform a TLS handshake (e.g., the server certificate can't be verified).";
-  } else {
-    reason = "Unknown reason";
-  }
-  return reason;
+// @ts-ignore
+declare var global: any;
+
+interface Application {
+  language: string;
+  platform: string;
+  version: string;
 }
 
-export const SOCKETERRORS = {
-  0: "The connection has not yet been established",
-  1: "The connection is established and communication is possible",
-  2: "The connection is going through the closing handshake",
-  3: "The connection has been closed or could not be opened",
-};
-
-/** SDDebug
- * Utility to log the JSON structure of an incoming object
- */
-const SDDebug = {
-  logger: () => {
-    const logEvent = (jsn: { [x: string]: any }) => {
-      console.log("____SDDebug.logger.logEvent");
-      console.log(jsn);
-      debugLog("-->> Received Obj:", jsn);
-      debugLog("jsonObj", jsn);
-      debugLog("event", jsn["event"]);
-      debugLog("actionType", jsn["actionType"]);
-      debugLog("settings", jsn["settings"]);
-      debugLog("coordinates", jsn["coordinates"]);
-      debugLog("---");
-    };
-
-    const logSomething = () => console.log("____SDDebug.logger.logSomething");
-
-    return { logEvent, logSomething };
-  },
-};
-
-/*
- * connectElgatoStreamDeckSocket
- * This is the first function StreamDeck Software calls, when
- * establishing the connection to the plugin or the Property Inspector
- * @param {string} inPort - The socket's port to communicate with StreamDeck software.
- * @param {string} inUUID - A unique identifier, which StreamDeck uses to communicate with the plugin
- * @param {string} inMessageType - Identifies, if the event is meant for the property inspector or the plugin.
- * @param {string} inApplicationInfo - Information about the host (StreamDeck) application
- * @param {string} inActionInfo - Context is an internal identifier used to communicate to the host application.
- */
-export function connectElgatoStreamDeckSocket(
-  streamDeck: any,
-  inPort: any,
-  inUUID: any,
-  inMessageType: string | number,
-  inApplicationInfo: any,
-  inActionInfo: any
-) {
-  console.log("connectElgatoStreamDeckSocket", {
-    inPort,
-    inUUID,
-    inMessageType,
-    inApplicationInfo,
-    inActionInfo,
-  });
-  StreamDeck.getInstance().sd.connect(arguments);
-  streamDeck.api = Object.assign(
-    { send: SDApi.send },
-    SDApi.common,
-    SDApi[inMessageType]
-  );
-  return streamDeck;
+interface Plugin {
+  version: string;
 }
 
-// /* legacy support */
-// function connectSocket(
-//   streamDeck: any,
-//   inPort: any,
-//   inUUID: any,
-//   inMessageType: any,
-//   inApplicationInfo: any,
-//   inActionInfo: any
-// ) {
-//   connectElgatoStreamDeckSocket(
-//     streamDeck,
-//     inPort,
-//     inUUID,
-//     inMessageType,
-//     inApplicationInfo,
-//     inActionInfo
-//   );
-// }
+interface Size {
+  columns: number;
+  rows: number;
+}
 
-// eslint-disable-next-line no-unused-vars
-// function initializeControlCenterClient() {
-//   const settings = Object.assign(REMOTESETTINGS || {}, { debug: false });
-//   let $CC = new ControlCenterClient(settings);
-//   window["$CC"] = $CC;
-//   return $CC;
-// }
+interface Device {
+  id: string;
+  name: string;
+  size: Size;
+  type: number;
+}
+
+interface Info {
+  application: Application;
+  plugin: Plugin;
+  devicePixelRatio: number;
+  devices: Device[];
+}
+
+interface Coordinates {
+  column: number;
+  row: number;
+}
+
+interface Payload {
+  settings: Settings;
+  coordinates: Coordinates;
+
+  [key: string]: any;
+}
+
+interface ActionInfo {
+  action: string;
+  context: string;
+  device: string;
+  payload: Payload;
+}
+
+interface HttpOptions {
+  body?: any;
+  headers?: {
+    [header: string]: string | string[];
+  };
+  params?: {
+    [param: string]: string | string[];
+  };
+  reportProgress?: boolean;
+  withCredentials?: boolean;
+  responseType?: "arraybuffer" | "blob" | "formdata" | "json" | "text";
+  /**
+   * Specials
+   */
+  credentials?: "include" | "same-origin" | "omit";
+  cache?: "default" | "no-cache" | "reload" | "force-cache" | "only-if-cached";
+  redirect?: "manual" | "follow" | "error";
+  referrerPolicy?:
+    | "no-referrer"
+    | "no-referrer-when-downgrade"
+    | "origin"
+    | "origin-when-cross-origin"
+    | "same-origin"
+    | "strict-origin"
+    | "strict-origin-when-cross-origin"
+    | "unsafe-url";
+}
+
+interface TitleParameters {
+  /**
+   * The font family for the title.
+   */
+  fontFamily: string;
+
+  /**
+   * The font size for the title.
+   */
+  fontSize: number;
+
+  /**
+   * The font style for the title.
+   */
+  fontStyle: string;
+
+  /**
+   * Boolean indicating an underline under the title.
+   */
+  fontUnderline: boolean;
+
+  /**
+   * Boolean indicating if the title is visible.
+   */
+  showTitle: boolean;
+
+  /**
+   * Vertical alignment of the title. Possible values are "top", "bottom" and "middle".
+   */
+  titleAlignment: string;
+
+  /**
+   * Title color.
+   */
+  titleColor: string;
+}
+
+interface Event {
+  event: EventsReceived | EventsSent;
+}
 
 /**
- * StreamDeck object containing all required code to establish
- * communication with SD-Software and the Property Inspector
+ * Receivable events
  */
-export const StreamDeck = ((debug?: boolean) => {
-  let instance: {
-    sd: {
-      emit: any;
-      connection: any;
-      uuid?: any;
-      on?: (name: any, fn: any) => any;
-      connect?: (args: any) => void;
-      api?: any;
-      logger?: { logEvent: (jsn: any) => void; logSomething: () => void };
-      actionInfo?: any;
-      applicationInfo?: any;
-      messageType?: string;
-    };
-  };
+interface DidReceiveSettingsEvent extends Event {
   /**
-   * Populate and initialize internally used properties
+   * The action unique identifier.
    */
-  function init() {
-    // @ts-ignore
-    let sd = $SD;
+  action: string;
 
-    // *** PRIVATE ***
-    let inPort: string,
-      inUUID: any,
-      inMessageType: string,
-      inApplicationInfo: any,
-      inActionInfo: any,
-      websocket = null;
+  /**
+   * An opaque value identifying the instance's action.
+   */
+  context: string;
 
-    let events = ELGEvents.eventEmitter();
-    let logger = SDDebug.logger();
+  /**
+   * An opaque value identifying the device.
+   */
+  device: string;
 
-    function showVars() {
-      debugLog("---- showVars");
-      debugLog("- port", inPort);
-      debugLog("- uuid", inUUID);
-      debugLog("- messagetype", inMessageType);
-      debugLog("- info", inApplicationInfo);
-      debugLog("- inActionInfo", inActionInfo);
-      debugLog("----< showVars");
+  /**
+   * A json object
+   */
+  payload: {
+    /**
+     * This json object contains persistently stored data.
+     */
+    settings: Settings;
+
+    /**
+     * The coordinates of the action triggered.
+     */
+    coordinates: Coordinates;
+
+    /**
+     * This is a parameter that is only set when the action has multiple states defined in its manifest.json. The 0-based value contains the current state of the action.
+     */
+    state?: number;
+
+    /**
+     * Boolean indicating if the action is inside a Multi Action.
+     */
+    isInMultiAction: boolean;
+  };
+}
+
+interface DidReceiveGlobalSettingsEvent extends Event {
+  /**
+   * A json object
+   */
+  payload: {
+    /**
+     * This json object contains persistently stored data.
+     */
+    settings: GlobalSettings;
+  };
+}
+
+interface KeyDownEvent extends Event {
+  /**
+   * The action's unique identifier. If your plugin supports multiple actions, you should use this value to see which action was triggered.
+   */
+  action: string;
+
+  /**
+   * An opaque value identifying the instance's action. You will need to pass this opaque value to several APIs like the setTitle API.
+   */
+  context: string;
+
+  /**
+   * An opaque value identifying the device.
+   */
+  device: string;
+
+  /**
+   * A json object
+   */
+  payload: {
+    /**
+     * This json object contains persistently stored data.
+     */
+    globalSettings: GlobalSettings;
+
+    /**
+     * This json object contains persistently stored data.
+     */
+    settings: Settings;
+
+    /**
+     * The coordinates of the action triggered.
+     */
+    coordinates: Coordinates;
+
+    /**
+     * This is a parameter that is only set when the action has multiple states defined in its manifest.json.
+     * The 0-based value contains the current state of the action.
+     */
+    state?: number;
+
+    /**
+     * This is a parameter that is only set when the action is triggered with a specific value from a Multi Action.
+     * For example if the user sets the Game Capture Record action to be disabled in a Multi Action, you would see the value 1.
+     * Only the value 0 and 1 are valid.
+     */
+    userDesiredState?: 1 | 0;
+
+    /**
+     * Boolean indicating if the action is inside a Multi Action.
+     */
+    isInMultiAction: boolean;
+  };
+}
+
+interface KeyUpEvent extends KeyDownEvent {}
+
+interface WillAppearEvent extends Event {
+  /**
+   * The action's unique identifier. If your plugin supports multiple actions, you should use this value to see which action was triggered.
+   */
+  action: string;
+
+  /**
+   * An opaque value identifying the instance's action. You will need to pass this opaque value to several APIs like the setTitle API.
+   */
+  context: string;
+
+  /**
+   * An opaque value identifying the device.
+   */
+  device: string;
+
+  /**
+   * A json object
+   */
+  payload: {
+    /**
+     * This json object contains persistently stored data.
+     */
+    globalSettings: GlobalSettings;
+
+    /**
+     * This json object contains persistently stored data.
+     */
+    settings: Settings;
+
+    /**
+     * The coordinates of the action triggered.
+     */
+    coordinates: Coordinates;
+
+    /**
+     * This is a parameter that is only set when the action has multiple states defined in its manifest.json.
+     * The 0-based value contains the current state of the action.
+     */
+    state?: number;
+
+    /**
+     * Boolean indicating if the action is inside a Multi Action.
+     */
+    isInMultiAction: boolean;
+  };
+}
+
+interface WillDisappearEvent extends WillAppearEvent {}
+
+interface TitleParametersDidChangeEvent extends Event {
+  /**
+   * The action's unique identifier. If your plugin supports multiple actions, you should use this value to see which action was triggered.
+   */
+  action: string;
+
+  /**
+   * An opaque value identifying the instance's action. You will need to pass this opaque value to several APIs like the setTitle API.
+   */
+  context: string;
+
+  /**
+   * An opaque value identifying the device.
+   */
+  device: string;
+
+  /**
+   * A json object
+   */
+  payload: {
+    /**
+     * This json object contains persistently stored data.
+     */
+    globalSettings: GlobalSettings;
+
+    /**
+     * This json object contains persistently stored data.
+     */
+    settings: Settings;
+
+    /**
+     * The coordinates of the action triggered.
+     */
+    coordinates: Coordinates;
+
+    /**
+     * This is a parameter that is only set when the action has multiple states defined in its manifest.json.
+     * The 0-based value contains the current state of the action.
+     */
+    state?: number;
+
+    /**
+     * The new title.
+     */
+    title: string;
+
+    /**
+     * A json object describing the new title parameters.
+     */
+    titleParameters: TitleParameters;
+  };
+}
+
+interface DeviceDidConnectEvent extends Event {
+  /**
+   * An opaque value identifying the device.
+   */
+  device: string;
+
+  /**
+   * A json object containing information about the device.
+   */
+  deviceInfo: {
+    /**
+     * Type of device. Possible values are kESDSDKDeviceType_StreamDeck (0),
+     * kESDSDKDeviceType_StreamDeckMini (1), kESDSDKDeviceType_StreamDeckXL (2),
+     * kESDSDKDeviceType_StreamDeckMobile (3) and kESDSDKDeviceType_CorsairGKeys (4).
+     */
+    type: DeviceType;
+
+    /**
+     * The number of columns and rows of keys that the device owns.
+     */
+    size: Size;
+
+    /**
+     * The name of the device set by the user.
+     */
+    name: string;
+  };
+}
+
+interface DeviceDidDisconnectEvent extends Event {
+  /**
+   * An opaque value identifying the device.
+   */
+  device: string;
+}
+
+interface ApplicationDidLaunchEvent extends Event {
+  /**
+   * A json object
+   */
+  payload: {
+    /**
+     * The identifier of the application that has been launched.
+     */
+    application: string;
+  };
+}
+
+interface ApplicationDidTerminateEvent extends ApplicationDidLaunchEvent {}
+
+interface SystemDidWakeUpEvent extends Event {}
+
+interface PropertyInspectorDidAppearEvent extends Event {
+  /**
+   * The action's unique identifier. If your plugin supports multiple actions, you should use this value to see which action was triggered.
+   */
+  action: string;
+
+  /**
+   * An opaque value identifying the instance's action.
+   */
+  context: string;
+
+  /**
+   * An opaque value identifying the device.
+   */
+  device: string;
+}
+
+interface PropertyInspectorDidDisappearEvent
+  extends PropertyInspectorDidAppearEvent {}
+
+interface SendToPluginEvent extends Event {
+  /**
+   * The action's unique identifier. If your plugin supports multiple actions, you should use this value to see which action was triggered.
+   */
+  action: string;
+
+  /**
+   * An opaque value identifying the instance's action.
+   */
+  context: string;
+
+  /**
+   * An opaque value identifying the device.
+   */
+  payload: any;
+}
+
+interface SendToPropertyInspectorEvent extends SendToPluginEvent {}
+
+enum DeviceType {
+  KESDSDKDeviceType_StreamDeck,
+  KESDSDKDeviceType_StreamDeckMini,
+  KESDSDKDeviceType_StreamDeckXL,
+  KESDSDKDeviceType_StreamDeckMobile,
+  KESDSDKDeviceType_CorsairGKeys,
+}
+
+enum Destination {
+  HARDWARE_AND_SOFTWARE,
+  HARDWARE_ONLY,
+  SOFTWARE_ONLY,
+}
+
+enum EventsReceived {
+  /**
+   * Whenever a instance is initialized
+   */
+  INIT = "init",
+  DESTROY = "destroy",
+
+  /** Plugin and Property Inspector */
+  DID_RECEIVE_SETTINGS = "didReceiveSettings",
+  DID_RECEIVE_GLOBAL_SETTINGS = "didReceiveGlobalSettings",
+  /** Plugin only */
+  KEY_DOWN = "keyDown",
+  KEY_UP = "keyUp",
+  WILL_APPEAR = "willAppear",
+  WILL_DISAPPEAR = "willDisappear",
+  TITLE_PARAMETERS_DID_CHANGE = "titleParametersDidChange",
+  DEVICE_DID_CONNECT = "deviceDidConnect",
+  DEVICE_DID_DISCONNECT = "deviceDidDisconnect",
+  APPLICATION_DID_LAUNCH = "applicationDidLaunch",
+  APPLICATION_DID_TERMINATE = "applicationDidTerminate",
+  SYSTEM_DID_WAKE_UP = "systemDidWakeUp",
+  PROPERTY_INSPECTOR_DID_APPEAR = "propertyInspectorDidAppear",
+  PROPERTY_INSPECTOR_DID_DISAPPEAR = "propertyInspectorDidDisappear",
+  SEND_TO_PLUGIN = "sendToPlugin",
+  /** Property Inspector only */
+  SEND_TO_PROPERTY_INSPECTOR = "sendToPropertyInspector",
+}
+
+enum EventsSent {
+  /** Plugin and Property Inspector */
+  SET_SETTINGS = "setSettings",
+  GET_SETTINGS = "getSettings",
+  SET_GLOBAL_SETTINGS = "setGlobalSettings",
+  GET_GLOBAL_SETTINGS = "getGlobalSettings",
+  OPEN_URL = "openUrl",
+  LOG_MESSAGE = "logMessage",
+  /** Plugin only */
+  SET_TITLE = "setTitle",
+  SET_IMAGE = "setImage",
+  SHOW_ALERT = "showAlert",
+  SHOW_OK = "showOk",
+  SET_STATE = "setState",
+  SWITCH_TO_PROFILE = "switchToProfile",
+  SEND_TO_PROPERTY_INSPECTOR = "sendToPropertyInspector",
+  /** Property Inspector only */
+  SEND_TO_PLUGIN = "sendToPlugin",
+}
+
+abstract class StreamDeck {
+  static initialized = false;
+  websocket: WebSocket;
+  uuid: string;
+  private instances: StreamDeckInstance[] = [];
+  globalSettings: GlobalSettings;
+  settings: Settings;
+
+  static async fileToBase64(file: File) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+  }
+
+  constructor() {
+    if (!StreamDeck.initialized) {
+      StreamDeck.initialized = true;
+      const _global = (window || global) as any;
+      // @ts-ignore
+      _global.connectElgatoStreamDeckSocket = (...args: any[]) =>
+        this.init(...args);
     }
+  }
 
-    function connect(args: any[]) {
-      inPort = args[0];
-      inUUID = args[1];
-      inMessageType = args[2];
-      try {
-        inApplicationInfo = JSON.parse(args[3]);
-        inActionInfo = args[4] !== undefined ? JSON.parse(args[4]) : args[4];
-      } catch (err) {
-        throw err;
+  init(
+    inPort?: number,
+    inUUID?: string,
+    inRegisterEvent?: string,
+    inInfo?: string,
+    inActionInfo?: string
+  ) {
+    const info: Info = inInfo ? JSON.parse(inInfo) : inInfo;
+    const actionInfo: ActionInfo = inActionInfo
+      ? JSON.parse(inActionInfo)
+      : inActionInfo;
+
+    this.uuid = inUUID;
+
+    this.websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
+
+    this.websocket.onopen = () => {
+      this.send({
+        event: inRegisterEvent,
+        uuid: this.uuid,
+      });
+
+      /**
+       * When initializing with action info then initialize asap
+       */
+      if (actionInfo) {
+        this.globalSettings = actionInfo.payload.globalSettings;
+        this.settings = actionInfo.payload.settings;
+        this.willAppear({
+          action: actionInfo.action,
+          context: actionInfo.context,
+          device: actionInfo.device,
+          payload: {
+            globalSettings: this.globalSettings,
+            settings: this.settings,
+          },
+        } as any);
+      }
+    };
+
+    this.websocket.onmessage = (message) => {
+      const jsonObj: any = JSON.parse(message.data);
+      const event = jsonObj["event"];
+      const payload = jsonObj["payload"] || {};
+
+      if (typeof this[event] === "function") {
+        this[event](jsonObj);
       }
 
-      /** Debug variables */
-      if (debug) {
-        showVars();
-      }
-
-      const lang = getProp(inApplicationInfo, "application.language", false);
-      if (lang) {
-        loadLocalization(
-          lang,
-          inMessageType === "registerPropertyInspector" ? "./" : "./",
-          () => {
-            events.emit("localizationLoaded", { language: lang });
+      if (
+        jsonObj.hasOwnProperty("action") ||
+        jsonObj.hasOwnProperty("context") ||
+        jsonObj.hasOwnProperty("device")
+      ) {
+        this.instances.forEach((i) => {
+          if (jsonObj.hasOwnProperty("action") && i.action !== jsonObj.action) {
+            return;
           }
+          if (
+            jsonObj.hasOwnProperty("context") &&
+            i.context !== jsonObj.context
+          ) {
+            return;
+          }
+          if (jsonObj.hasOwnProperty("device") && i.device !== jsonObj.device) {
+            return;
+          }
+
+          if (typeof i[event] === "function") {
+            i[event](jsonObj);
+          }
+
+          i.emit(event, jsonObj);
+        });
+      }
+
+      this.emit(event, jsonObj);
+    };
+
+    this.websocket.onclose = () => {
+      // Websocket is closed
+    };
+  }
+
+  willAppear(data: WillAppearEvent) {
+    const className =
+      data.payload && data.payload.coordinates
+        ? StreamDeckPluginInstance
+        : StreamDeckPropertyInspectorInstance;
+    const instance = new className(
+      this.websocket,
+      data.action,
+      data.context,
+      data.device,
+      data.payload.globalSettings,
+      data.payload.settings,
+      this.uuid
+    );
+    this.instances.push(instance);
+    this.emit(EventsReceived.INIT, {
+      instance,
+    });
+  }
+
+  willDisappear(data: WillDisappearEvent) {
+    const instance = this.instances.find(
+      (i) =>
+        i.action === data.action &&
+        i.context === data.context &&
+        i.device === data.device
+    );
+    if (instance) {
+      instance.emit(EventsReceived.DESTROY, {
+        instance,
+      });
+      this.emit(EventsReceived.DESTROY, {
+        instance,
+      });
+      const index = this.instances.indexOf(instance);
+      if (index > -1) {
+        this.instances.slice(index, 0);
+      }
+    }
+  }
+
+  didReceiveGlobalSettings(data: DidReceiveGlobalSettingsEvent) {
+    if (process.env.NODE_ENV === "development")
+      console.log("didReceiveGlobalSettings:", { data });
+    this.globalSettings = data.payload.settings;
+  }
+
+  didReceiveSettings(data: DidReceiveSettingsEvent) {
+    if (process.env.NODE_ENV === "development")
+      console.log("didReceiveSettings:", { data });
+    this.settings = data.payload.settings;
+  }
+
+  send(data) {
+    this.websocket.send(JSON.stringify(data));
+  }
+
+  /**
+   * Drawing utils
+   */
+  createCanvas(): HTMLCanvasElement {
+    const canvas = document.createElement("canvas");
+    canvas.width = 144;
+    canvas.height = 144;
+    return canvas;
+  }
+
+  async drawPicture(
+    canvas: HTMLCanvasElement = this.createCanvas(),
+    pictureSrc: string,
+    dx: number = 0,
+    dy: number = 0,
+    dw: number = 144,
+    dh?: number,
+    proportional?: boolean
+  ): Promise<HTMLCanvasElement> {
+    return new Promise((resolve, reject) => {
+      const image = new Image();
+      image.crossOrigin = "anonymous";
+      image.onload = () => {
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(
+          image,
+          dx,
+          dy,
+          dw,
+          proportional ? image.height * (dw / image.width) : dh || dw
+        );
+        resolve(canvas);
+      };
+      image.onabort = reject;
+      image.onerror = reject;
+      image.src =
+        pictureSrc + (pictureSrc.match(/\?/) ? "&" : "?") + performance.now();
+    });
+  }
+
+  /**
+   * HTTP Utils
+   */
+  get http() {
+    return new (class HttpClient {
+      request<K>(
+        method: string,
+        url: string,
+        options: HttpOptions = {}
+      ): Promise<K | Response> {
+        if (
+          typeof options.body === "object" ||
+          (options.body && typeof options.body.length !== "undefined")
+        ) {
+          options.body = JSON.stringify(options.body);
+        }
+        if (options.withCredentials) {
+          options.credentials = "include";
+        }
+        options.responseType = options.responseType || "json";
+        options.headers = options.headers || {
+          Accept: "application/json",
+        };
+        return fetch(url, {
+          ...options,
+          method,
+        } as any).then((response): any => {
+          if (options.responseType !== undefined) {
+            if (options.responseType === "arraybuffer") {
+              return response.arrayBuffer();
+            }
+            if (options.responseType === "blob") {
+              return response.blob();
+            }
+            if (options.responseType === "formdata") {
+              return response.formData();
+            }
+            if (options.responseType === "json") {
+              return response.json();
+            }
+            if (options.responseType === "text") {
+              return response.text();
+            }
+          }
+          return response;
+        });
+      }
+
+      get<K>(url: string, options: HttpOptions): Promise<K | Response> {
+        return this.request("GET", url, options);
+      }
+
+      post<K>(
+        url: string,
+        body?: any,
+        options?: HttpOptions
+      ): Promise<K | Response> {
+        return this.request("POST", url, {
+          ...options,
+          body,
+        });
+      }
+
+      patch<K>(
+        url: string,
+        body?: any,
+        options?: HttpOptions
+      ): Promise<K | Response> {
+        return this.request("PATCH", url, {
+          ...options,
+          body,
+        });
+      }
+
+      put<K>(
+        url: string,
+        body?: any,
+        options?: HttpOptions
+      ): Promise<K | Response> {
+        return this.request("PUT", url, {
+          ...options,
+          body,
+        });
+      }
+
+      delete<K>(url: string, options?: HttpOptions): Promise<K | Response> {
+        return this.request("DELETE", url, options);
+      }
+    })();
+  }
+
+  /**
+   * Custom event handling
+   */
+  private eventListeners: {
+    [key: string]: ((...args) => any)[];
+  } = {};
+
+  on(type: EventsReceived, listener: (...args) => any) {
+    return this.addEventListener(type, listener);
+  }
+
+  emit(type: EventsReceived, obj?: any) {
+    return this.dispatchEvent(new CustomEvent(type, { detail: obj }));
+  }
+
+  addEventListener(type: EventsReceived, listener: (...args) => any) {
+    if (!this.eventListeners.hasOwnProperty(type)) {
+      this.eventListeners[type] = [];
+    }
+    this.eventListeners[type].push(listener);
+    return true;
+  }
+
+  removeEventListener(type: EventsReceived, listener: (...args) => any) {
+    if (!this.eventListeners.hasOwnProperty(type)) {
+      return false;
+    }
+    const index = this.eventListeners[type].indexOf(listener);
+    if (index > -1) {
+      this.eventListeners[type].splice(index, 1);
+      return true;
+    }
+    return false;
+  }
+
+  dispatchEvent(event: CustomEvent) {
+    const type = event.type;
+    if (!this.eventListeners.hasOwnProperty(type)) {
+      return false;
+    }
+    for (let listener of this.eventListeners[type]) {
+      try {
+        listener(event);
+      } catch (e) {
+        console.error(
+          "Error when dispatching event on listener",
+          event,
+          e,
+          listener
         );
       }
-
-      /** restrict the API to what's possible
-       * within Plugin or Property Inspector
-       * <unused for now>
-       */
-      // streamDeck.api = SDApi[inMessageType];
-      if (websocket) {
-        websocket.close();
-        websocket = null;
-      }
-
-      websocket = new WebSocket("ws://localhost:" + inPort);
-
-      websocket.onopen = () => {
-        let json = {
-          event: inMessageType,
-          uuid: inUUID,
-        };
-
-        // console.log('***************', inMessageType + "  websocket:onopen", inUUID, json);
-        websocket.sendJSON(json);
-        sd.uuid = inUUID;
-        sd.actionInfo = inActionInfo;
-        sd.applicationInfo = inApplicationInfo;
-        sd.messageType = inMessageType;
-        sd.connection = websocket;
-
-        instance.sd.emit("connected", {
-          connection: websocket,
-          port: inPort,
-          uuid: inUUID,
-          actionInfo: inActionInfo,
-          applicationInfo: inApplicationInfo,
-          messageType: inMessageType,
-        });
-      };
-
-      websocket.onerror = (evt: { data: any }) => {
-        console.warn("WEBOCKET ERROR", evt, evt.data);
-      };
-
-      websocket.onclose = (evt: any) => {
-        // Websocket is closed
-        let reason = WEBSOCKETERROR(evt);
-        console.warn("[STREAMDECK]***** WEBOCKET CLOSED **** reason:", reason);
-      };
-
-      websocket.onmessage = (evt: { data: string }) => {
-        let jsonObj = JSON.parse(evt.data),
-          m: string;
-
-        // console.log('[STREAMDECK] websocket.onmessage ... ', jsonObj.event, jsonObj);
-        if (!jsonObj.hasOwnProperty("action")) {
-          m = jsonObj.event;
-          // console.log('%c%s', 'color: white; background: red; font-size: 12px;', '[common.js]onmessage:', m);
-        } else {
-          switch (inMessageType) {
-            case "registerPlugin":
-              m = jsonObj["action"] + "." + jsonObj["event"];
-              break;
-            case "registerPropertyInspector":
-              m = "sendToPropertyInspector";
-              break;
-            default:
-              console.log(
-                "%c%s",
-                "color: white; background: red; font-size: 12px;",
-                "[STREAMDECK] websocket.onmessage +++++++++  PROBLEM ++++++++"
-              );
-              console.warn("UNREGISTERED MESSAGETYPE:", inMessageType);
-          }
-        }
-
-        if (m && m !== "") events.emit(m, jsonObj);
-      };
-
-      instance.sd.connection = websocket;
     }
-
-    return {
-      // *** PUBLIC ***
-      sd: {
-        uuid: inUUID,
-        on: events.on,
-        emit: events.emit,
-        connection: websocket,
-        connect: connect,
-        api: null,
-        logger: logger,
-      },
-    };
+    return true;
   }
-
-  return {
-    getInstance: () => {
-      if (!instance) instance = init();
-      return instance;
-    },
-  };
-})();
-
-/** SDApi
- * This ist the main API to communicate between plugin, property inspector and
- * application host.
- * Internal functions:
- * - setContext: sets the context of the current plugin
- * - exec: prepare the correct JSON structure and send
- *
- * Methods exposed in the streamDeck.api alias
- * Messages send from the plugin
- * -----------------------------
- * - showAlert
- * - showOK
- * - setSettings
- * - setTitle
- * - setImage
- * - sendToPropertyInspector
- *
- * Messages send from Property Inspector
- * -------------------------------------
- * - sendToPlugin
- *
- * Messages received in the plugin
- * -------------------------------
- * willAppear
- * willDisappear
- * keyDown
- * keyUp
- */
-
-export const SDApi = {
-  send: (
-    streamDeck: any,
-    context: any,
-    fn: string,
-    payload: { [key: string]: any },
-    debug?: any
-  ) => {
-    /** Combine the passed JSON with the name of the event and it's context
-     * If the payload contains 'event' or 'context' keys, it will overwrite existing 'event' or 'context'.
-     * This function is non-mutating and thereby creates a new object containing
-     * all keys of the original JSON objects.
-     */
-    const pl = Object.assign({}, { event: fn, context: context }, payload);
-    /** Check, if we have a connection, and if, send the JSON payload */
-    if (debug) {
-      console.log("-----SDApi.send-----");
-      console.log("context", context);
-      console.log(pl);
-      console.log(payload.payload);
-      console.log(JSON.stringify(payload.payload));
-      console.log("-------");
-    }
-    streamDeck.connection && streamDeck.connection.sendJSON(pl);
-    /**
-     * DEBUG-Utility to quickly show the current payload in the Property Inspector.
-     */
-    if (
-      streamDeck.connection &&
-      ["sendToPropertyInspector", "showOK", "showAlert", "setSettings"].indexOf(
-        fn
-      ) === -1
-    ) {
-      // console.log("send.sendToPropertyInspector", payload);
-      // this.sendToPropertyInspector(context, typeof payload.payload==='object' ? JSON.stringify(payload.payload) : JSON.stringify({'payload':payload.payload}), pl['action']);
-    }
-  },
-  registerPlugin: {
-    /** Messages send from the plugin */
-    showAlert: (streamDeck: any, context: any) => {
-      SDApi.send(streamDeck, context, "showAlert", {});
-    },
-    showOk: (streamDeck: any, context: any) => {
-      SDApi.send(streamDeck, context, "showOk", {});
-    },
-    setState: (streamDeck: any, context: any, payload: number) => {
-      SDApi.send(streamDeck, context, "setState", {
-        payload: {
-          state: 1 - Number(payload === 0),
-        },
-      });
-    },
-    setTitle: (streamDeck: any, context: any, title: string, target: any) => {
-      SDApi.send(streamDeck, context, "setTitle", {
-        payload: {
-          title: "" + title || "",
-          target: target || DestinationEnum.HARDWARE_AND_SOFTWARE,
-        },
-      });
-    },
-    setImage: (streamDeck: any, context: any, img: any, target: any) => {
-      SDApi.send(streamDeck, context, "setImage", {
-        payload: {
-          image: img || "",
-          target: target || DestinationEnum.HARDWARE_AND_SOFTWARE,
-        },
-      });
-    },
-    sendToPropertyInspector: (
-      streamDeck: any,
-      context: any,
-      payload: any,
-      action: any
-    ) => {
-      SDApi.send(streamDeck, context, "sendToPropertyInspector", {
-        action: action,
-        payload: payload,
-      });
-    },
-    showUrl2: (streamDeck: any, context: any, urlToOpen: any) => {
-      SDApi.send(streamDeck, context, "openUrl", {
-        payload: {
-          url: urlToOpen,
-        },
-      });
-    },
-  },
-  /** Messages send from Property Inspector */
-  registerPropertyInspector: {
-    sendToPlugin: (streamDeck: any, piUUID: any, action: any, payload: any) => {
-      SDApi.send(
-        streamDeck,
-        piUUID,
-        "sendToPlugin",
-        {
-          action: action,
-          payload: payload || {},
-        },
-        false
-      );
-    },
-  },
-  /** COMMON */
-  common: {
-    getSettings: (streamDeck: any, context: any, payload: any) => {
-      SDApi.send(streamDeck, context, "getSettings", {});
-    },
-    setSettings: (streamDeck: any, context: any, payload: any) => {
-      SDApi.send(streamDeck, context, "setSettings", {
-        payload: payload,
-      });
-    },
-    getGlobalSettings: (streamDeck: any, context: any, payload: any) => {
-      SDApi.send(streamDeck, context, "getGlobalSettings", {});
-    },
-    setGlobalSettings: (streamDeck: any, context: any, payload: any) => {
-      SDApi.send(streamDeck, context, "setGlobalSettings", {
-        payload: payload,
-      });
-    },
-    logMessage: function(streamDeck: any) {
-      /**
-       * for logMessage we don't need a context, so we allow both
-       * logMessage(unneededContext, 'message')
-       * and
-       * logMessage('message')
-       */
-      let payload = arguments.length > 1 ? arguments[1] : arguments[0];
-      SDApi.send(streamDeck, null, "logMessage", {
-        payload: {
-          message: payload,
-        },
-      });
-    },
-    openUrl: (streamDeck: any, context: any, urlToOpen: any) => {
-      SDApi.send(streamDeck, context, "openUrl", {
-        payload: {
-          url: urlToOpen,
-        },
-      });
-    },
-    test: () => {
-      console.log(this);
-      console.log(SDApi);
-    },
-
-    debugPrint: function(streamDeck: any, context: any) {
-      // console.log("------------ DEBUGPRINT");
-      // console.log([].slice.apply(arguments).join());
-      // console.log("------------ DEBUGPRINT");
-      SDApi.send(streamDeck, context, "debugPrint", {
-        payload: [].slice.apply(arguments).join(".") || "",
-      });
-    },
-
-    dbgSend: function(streamDeck: any, fn: string | number, context: any) {
-      /** lookup if an appropriate function exists */
-      if (streamDeck.connection && this[fn] && typeof this[fn] === "function") {
-        /** verify if type of payload is an object/json */
-        const payload = this[fn]();
-        if (typeof payload === "object") {
-          Object.assign({ event: fn, context: context }, payload);
-          streamDeck.connection && streamDeck.connection.sendJSON(payload);
-        }
-      }
-      console.log(this, fn, typeof this[fn], this[fn]());
-    },
-  },
-};
-
-export async function SDConnected(streamDeck: any) {
-  /** subscribe to the willAppear and other events */
-  streamDeck.on("dev.timmo.homeassistant.action.willAppear", (jsonObj) =>
-    action.onWillAppear(jsonObj)
-  );
-  streamDeck.on("dev.timmo.homeassistant.action.keyUp", (jsonObj) =>
-    action.onKeyUp(jsonObj)
-  );
-  streamDeck.on("dev.timmo.homeassistant.action.sendToPlugin", (jsonObj) =>
-    action.onSendToPlugin(jsonObj)
-  );
-  streamDeck.on(
-    "dev.timmo.homeassistant.action.didReceiveSettings",
-    (jsonObj) => action.onDidReceiveSettings(jsonObj)
-  );
 }
 
-/** ACTIONS */
-export const action = {
-  settings: {},
-  onDidReceiveSettings: function(jsn) {
-    console.log(
-      "%c%s",
-      "color: white; background: red; font-size: 15px;",
-      "[app.js]onDidReceiveSettings:"
-    );
-    this.settings[jsn.context] = getProp(jsn, "payload.settings", {});
-    this.doSomeThing(this.settings, "onDidReceiveSettings", "orange");
-  },
+export class StreamDeckSDK extends StreamDeck {}
 
-  /**
-   * The 'willAppear' event is the first event a key will receive, right before it gets
-   * showed on your Stream Deck and/or in Stream Deck software.
-   * This event is a good place to setup your plugin and look at current settings (if any),
-   * which are embedded in the events payload.
-   */
+export class StreamDeckPropertyInspector extends StreamDeck {
+  enableSettingManager() {
+    this.addEventListener(EventsReceived.INIT, (event) => {
+      const instance = event.detail.instance;
+      const selectorString = "input, textarea, select";
 
-  onWillAppear: function(jsn) {
-    console.log(
-      "You can cache your settings in 'onWillAppear'",
-      jsn.payload.settings
-    );
+      const loadValue = (element) => {
+        if (instance.settings.hasOwnProperty(element.name || element.id)) {
+          const value = instance.settings[element.name || element.id];
+          if (element.type === "radio") {
+            element.checked = element.value === value;
+          } else if (element.type === "file") {
+            // element.value = encodeURI(value); // <- Files cant be set
+            const labelElement = document.querySelector(
+              `.sdpi-file-info[for="${element.id}"]`
+            );
+            if (labelElement) {
+              labelElement.textContent = value.replace(/^.*[\\\/]/, "");
+            }
+          } else {
+            element.value = value;
+          }
+        }
+      };
 
-    /**
-     * "The willAppear event carries your saved settings (if any). You can use these settings
-     * to setup your plugin or save the settings for later use.
-     * If you want to request settings at a later time, you can do so using the
-     * 'getSettings' event, which will tell Stream Deck to send your data
-     * (in the 'didReceiveSettings above)
-     *
-     * streamDeck.api.getSettings(jsn.context);
-     */
-    this.settings[jsn.context] = jsn.payload.settings;
-  },
+      const saveValue = (element, targetObj?) => {
+        let value;
 
-  onKeyUp: async (jsn) => {
-    console.log("onKeyUp", jsn);
-  },
+        if (element.type === "checkbox") {
+          value = element.checked;
+        } else if (element.type === "file") {
+          if (!element.value) {
+            return;
+          }
+          value = decodeURIComponent(
+            element.value.replace(/^C:\\fakepath\\/, "")
+          );
+          const labelElement = document.querySelector(
+            `.sdpi-file-info[for="${element.id}"]`
+          );
+          if (labelElement) {
+            labelElement.textContent = value.replace(/^.*[\\\/]/, "");
+          }
+        } else {
+          value = element.value;
+        }
 
-  onSendToPlugin: function(jsn) {
-    /**
-     * this is a message sent directly from the Property Inspector
-     * (e.g. some value, which is not saved to settings)
-     * You can send this event from Property Inspector (see there for an example)
-     */
-    const sdpi_collection = getProp(jsn, "payload.sdpi_collection", {});
-    if (sdpi_collection.value && sdpi_collection.value !== undefined) {
-      this.doSomeThing(
-        { [sdpi_collection.key]: sdpi_collection.value },
-        "onSendToPlugin",
-        "fuchsia"
+        if (targetObj) {
+          targetObj[element.name || element.id] = value;
+        } else {
+          instance.setSetting(element.name || element.id, value);
+        }
+      };
+
+      /**
+       * Bind change event so that changes will be saved automatically
+       */
+      document
+        .querySelectorAll(selectorString)
+        .forEach((element: HTMLInputElement) => {
+          if (!element.classList.contains("sdk-ignore")) {
+            /**
+             * Load current value when available
+             */
+            loadValue(element);
+
+            /**
+             * Save new value on change
+             */
+            element.addEventListener("change", () => saveValue(element));
+          }
+        });
+
+      /**
+       * Update fields when receiving update from stream deck
+       */
+      instance.addEventListener(
+        EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
+        () => {
+          document
+            .querySelectorAll(selectorString)
+            .forEach((element: HTMLInputElement) => {
+              if (!element.classList.contains("sdk-ignore")) {
+                /**
+                 * Load changed value when available
+                 */
+                loadValue(element);
+              }
+            });
+        }
       );
+
+      /**
+       * Update fields when receiving update from stream deck
+       */
+      instance.addEventListener(EventsReceived.DID_RECEIVE_SETTINGS, () => {
+        document
+          .querySelectorAll(selectorString)
+          .forEach((element: HTMLInputElement) => {
+            if (!element.classList.contains("sdk-ignore")) {
+              /**
+               * Load changed value when available
+               */
+              loadValue(element);
+            }
+          });
+      });
+
+      /**
+       * Save all values on unloading the page
+       */
+      window.addEventListener("beforeunload", (e) => {
+        e.preventDefault();
+
+        const globalSettings = instance.globalSettings;
+        document
+          .querySelectorAll(selectorString)
+          .forEach((element: HTMLInputElement) => {
+            if (!element.classList.contains("sdk-ignore")) {
+              saveValue(element, globalSettings);
+            }
+          });
+        instance.sendToPlugin({
+          _internal: true,
+          action: EventsSent.SET_GLOBAL_SETTINGS,
+          globalSettings,
+        });
+
+        const settings = instance.settings;
+        document
+          .querySelectorAll(selectorString)
+          .forEach((element: HTMLInputElement) => {
+            if (!element.classList.contains("sdk-ignore")) {
+              saveValue(element, settings);
+            }
+          });
+        instance.sendToPlugin({
+          _internal: true,
+          action: EventsSent.SET_SETTINGS,
+          settings,
+        });
+      });
+    });
+  }
+}
+
+abstract class StreamDeckInstance extends StreamDeck {
+  action: string;
+  context: string;
+  device: string;
+
+  constructor(
+    websocket: WebSocket,
+    action: string,
+    context: string,
+    device: string,
+    globalSettings: GlobalSettings,
+    settings: Settings,
+    uuid?: string
+  ) {
+    super();
+    this.websocket = websocket;
+    this.action = action;
+    this.context = context;
+    this.device = device;
+    this.globalSettings = globalSettings;
+    this.settings = settings;
+    this.uuid = uuid;
+  }
+
+  setSetting(key: keyof GlobalSettings, value: any) {
+    this.settings[key] = value;
+    this.sendEvent(EventsSent.SET_SETTINGS, this.settings);
+  }
+
+  setSettings(settings: Settings) {
+    this.settings = settings;
+    this.sendEvent(EventsSent.SET_SETTINGS, settings);
+  }
+
+  async getSettings(): Promise<Settings> {
+    return new Promise((resolve) => {
+      const temporaryListener = (event) => {
+        resolve(event.detail);
+      };
+      this.addEventListener(
+        EventsReceived.DID_RECEIVE_SETTINGS,
+        temporaryListener
+      );
+      this.sendEvent(EventsSent.GET_SETTINGS);
+    });
+  }
+
+  setGlobalSetting(key: keyof Settings, value: any) {
+    this.globalSettings[key] = value;
+    this.sendEvent(
+      EventsSent.SET_GLOBAL_SETTINGS,
+      this.globalSettings,
+      this.uuid
+    );
+  }
+
+  setGlobalSettings(settings: Settings) {
+    this.sendEvent(EventsSent.SET_GLOBAL_SETTINGS, settings, this.uuid);
+  }
+
+  async getGlobalSettings(): Promise<GlobalSettings> {
+    return new Promise((resolve) => {
+      const temporaryListener = (event) => {
+        resolve(event.detail);
+      };
+      this.addEventListener(
+        EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
+        temporaryListener
+      );
+      this.sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
+    });
+  }
+
+  openUrl(url: string) {
+    this.sendEvent(EventsSent.OPEN_URL, { url });
+  }
+
+  logMessage(message: string) {
+    this.sendEvent(EventsSent.LOG_MESSAGE, { message });
+  }
+
+  sendEvent(
+    eventName: EventsSent,
+    payload: any = undefined,
+    context = this.context,
+    action?: string
+  ) {
+    const data: any = {
+      event: eventName,
+      context,
+    };
+    if (payload !== undefined) {
+      data.payload = payload;
     }
-  },
-
-  /**
-   * Here's a quick demo-wrapper to show how you could change a key's title based on what you
-   * stored in settings.
-   * If you enter something into Property Inspector's name field (in this demo),
-   * it will get the title of your key.
-   *
-   * @param {JSON} jsn // the JSON object passed from Stream Deck to the plugin, which contains the plugin's context
-   *
-   */
-  setTitle: function(streamDeck, jsn) {
-    if (
-      this.settings[jsn.context] &&
-      this.settings[jsn.context].hasOwnProperty("mynameinput")
-    ) {
-      console.log(
-        "watch the key on your StreamDeck - it got a new title...",
-        this.settings[jsn.context].mynameinput
-      );
-      streamDeck.api.setTitle(
-        jsn.context,
-        this.settings[jsn.context].mynameinput
-      );
+    if (action !== undefined) {
+      data.action = action;
     }
-  },
+    this.send(data);
+  }
+}
+
+class StreamDeckPluginInstance extends StreamDeckInstance {
+  sendToPlugin(event: SendToPluginEvent) {
+    if (event.payload.hasOwnProperty("_internal")) {
+      if (event.payload.action === EventsSent.SET_SETTINGS) {
+        this.setSettings(event.payload.settings);
+      }
+    }
+  }
 
   /**
-   * Finally here's a method which gets called from various events above.
-   * This is just an idea how you can act on receiving some interesting message
-   * from Stream Deck.
+   * Set title
+   *
+   * @param title The title to display. If there is no title parameter, the title is reset to the title set by the user.
+   * @param target Specify if you want to display the title on the hardware and software (0), only on the hardware (1) or only on the software (2). Default is 0.
+   * @param state A 0-based integer value representing the state of an action with multiple states. This is an optional parameter. If not specified, the title is set to all states.
    */
-  doSomeThing: (inJsonData, caller, tagColor) => {
-    console.log(
-      "%c%s",
-      `color: white; background: ${tagColor || "grey"}; font-size: 15px;`,
-      `[app.js]doSomeThing from: ${caller}`
+  setTitle(
+    title: string | number | boolean,
+    target: Destination = Destination.HARDWARE_AND_SOFTWARE,
+    state?: number
+  ) {
+    const data: any = {
+      title: title.toString(),
+      target,
+    };
+    if (state) {
+      data.state = state;
+    }
+    this.sendEvent(EventsSent.SET_TITLE, data);
+  }
+
+  /**
+   * Set image
+   *
+   * @param image The image to display encoded in base64 with the image format declared in the mime type (PNG, JPEG, BMP, ...). svg is also supported. If no image is passed, the image is reset to the default image from the manifest.
+   * @param target Specify if you want to display the title on the hardware and software (0), only on the hardware (1) or only on the software (2). Default is 0.
+   * @param state A 0-based integer value representing the state of an action with multiple states. This is an optional parameter. If not specified, the image is set to all states.
+   */
+  setImage(
+    image: string | HTMLCanvasElement = null,
+    target: Destination = Destination.HARDWARE_AND_SOFTWARE,
+    state?: number
+  ) {
+    const data: any = { target };
+    if (image) {
+      data.image =
+        image instanceof HTMLCanvasElement ? image.toDataURL() : image;
+    }
+    if (state) {
+      data.state = state;
+    }
+    this.sendEvent(EventsSent.SET_IMAGE, data);
+  }
+
+  async setImageURL(
+    url: string,
+    proportional?: boolean,
+    target: Destination = Destination.HARDWARE_AND_SOFTWARE
+  ) {
+    const canvas = await this.drawPicture(
+      undefined,
+      url,
+      undefined,
+      undefined,
+      undefined,
+      undefined,
+      proportional
     );
-    console.log({ inJsonData });
-  },
-};
+    this.setImage(canvas, target);
+  }
 
-/**
- * This is the instance of the StreamDeck object.
- * There's only one StreamDeck object, which carries
- * connection parameters and handles communication
- * to/from the software's PluginManager.
- */
-const streamDeck = StreamDeck.getInstance().sd;
-streamDeck.api = SDApi;
+  showAlert() {
+    this.sendEvent(EventsSent.SHOW_ALERT);
+  }
 
-streamDeck.on("connected", (jsonObj) => SDConnected(jsonObj));
-streamDeck.on("deviceDidConnect", (jsonObj) =>
-  console.log("deviceDidConnect", jsonObj)
-);
+  showOk() {
+    this.sendEvent(EventsSent.SHOW_OK);
+  }
 
-export default streamDeck;
+  setState(state: number) {
+    this.sendEvent(EventsSent.SET_STATE, { state });
+  }
+
+  switchToProfile(profile: string) {
+    this.sendEvent(EventsSent.SWITCH_TO_PROFILE, { profile });
+  }
+
+  sendToPropertyInspector(payload: any) {
+    this.sendEvent(
+      EventsSent.SEND_TO_PROPERTY_INSPECTOR,
+      payload,
+      undefined,
+      this.action
+    );
+  }
+}
+
+class StreamDeckPropertyInspectorInstance extends StreamDeckInstance {
+  sendToPlugin(payload: any) {
+    this.sendEvent(EventsSent.SEND_TO_PLUGIN, payload, undefined, this.action);
+  }
+
+  sendEvent(
+    eventName: EventsSent,
+    payload: any = undefined,
+    context: string = this.uuid,
+    action?: string
+  ) {
+    super.sendEvent(eventName, payload, context, action);
+  }
+}

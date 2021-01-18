@@ -1,25 +1,4 @@
-/**
-//==============================================================================
-@file       main.css
-@brief      Home Assistant Plugin
-@copyright  (c) 2021, Aidan Timson <Timmo>
-            This source code is licensed under the MIT-style license found in the LICENSE file.
-//==============================================================================
-**/
-
-/* :root {
-  --sdpi-bgcolor: #2d2d2d;
-  --sdpi-background: #3d3d3d;
-  --sdpi-color: #d8d8d8;
-  --sdpi-bordercolor: #3a3a3a;
-  --sdpi-buttonbordercolor: #969696;
-  --sdpi-borderradius: 0px;
-  --sdpi-width: 224px;
-  --sdpi-fontweight: 600;
-  --sdpi-letterspacing: -0.25pt;
-} */
-
-html {
+/* html {
   --sdpi-bgcolor: #2d2d2d;
   --sdpi-background: #3d3d3d;
   --sdpi-color: #d8d8d8;
@@ -225,4 +204,4 @@ input:required:valid {
   background: var(--sdpi-background)
     url(data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSI5IiBoZWlnaHQ9IjkiIHZpZXdCb3g9IjAgMCA5IDkiPjxwb2x5Z29uIGZpbGw9IiNEOEQ4RDgiIHBvaW50cz0iNS4yIDEgNi4yIDEgNi4yIDcgMy4yIDcgMy4yIDYgNS4yIDYiIHRyYW5zZm9ybT0icm90YXRlKDQwIDQuNjc3IDQpIi8+PC9zdmc+)
     no-repeat 98% center;
-}
+} */

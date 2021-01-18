@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useReducer, useMemo } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import {
   Auth,
   HassConfig,
@@ -6,57 +6,14 @@ import {
   HassUser,
 } from "home-assistant-js-websocket";
 
-import { HassConnectionState, SettingHaConnection } from "./Types";
+import { HassConnectionState, SettingHaConnection } from "./Common/Types";
 import PropertyInspector from "./PropertyInspector";
 import SetupConnection from "./SetupConnection";
 import HomeAssistant, {
   handleChange as handleHassChange,
 } from "./HomeAssistant/HomeAssistant";
-import { loadLocalization, localizedStrings } from "./Common/Common";
-import streamDeck from "./Common/StreamDeck";
-import createUseSDAction from "./Common/Hooks/action";
-import {
-  createUseGlobalSettings,
-  createUsePluginSettings,
-} from "./Common/Hooks/settings";
-
-const useSDAction = createUseSDAction({
-  useState,
-  useEffect,
-});
-
-const usePluginGlobalSettings = createUseGlobalSettings({
-  useState,
-  useEffect,
-  useReducer,
-});
-
-const usePluginSettings = createUsePluginSettings({
-  useState,
-  useEffect,
-  useReducer,
-});
 
 export default function App() {
-  const connectedResult = useSDAction(streamDeck, "connected");
-
-  const [globalSettings, setGlobalSettings] = usePluginGlobalSettings(
-    streamDeck,
-    {
-      haConnections: [],
-    },
-    connectedResult
-  );
-
-  const [settings, setSettings] = usePluginSettings(
-    streamDeck,
-    {
-      haConnection: "",
-      textState: "",
-    },
-    connectedResult
-  );
-
   const [hassAuth, setHassAuth] = useState<Auth>();
   const [hassAuthToken, setHassAuthToken] = useState<string>();
   const [hassConfig, setHassConfig] = useState<HassConfig>();
@@ -77,11 +34,11 @@ export default function App() {
   );
 
   useEffect(() => {
-    if (!localizedStrings || !localizedStrings["setupConnectionTitle"]) {
-      var url = new URL(window.location.href);
-      var language = url.searchParams.get("language");
-      if (language) loadLocalization(language, "./");
-    }
+    // if (!localizedStrings || !localizedStrings["setupConnectionTitle"]) {
+    //   var url = new URL(window.location.href);
+    //   var language = url.searchParams.get("language");
+    //   if (language) loadLocalization(language, "./");
+    // }
   }, []);
 
   useEffect(() => {
@@ -122,23 +79,18 @@ export default function App() {
     setHassConnectionState(-1);
   }
 
-  console.log("App:", {
-    streamDeck,
-    connectedResult,
-    globalSettings,
-    settings,
-  });
+  // console.log("App:", {
+  //   streamDeck,
+  //   connectedResult,
+  //   globalSettings,
+  //   settings,
+  // });
 
   return (
     <>
+      <h2>Hello PI!</h2>
       {page === "property-inspector" ? (
-        <PropertyInspector
-          globalSettings={globalSettings}
-          settings={settings}
-          streamDeck={streamDeck}
-          setGlobalSettings={setGlobalSettings}
-          setSettings={setSettings}
-        />
+        <PropertyInspector />
       ) : page === "setup-connection" ? (
         <SetupConnection
           hassConnectionState={hassConnectionState}

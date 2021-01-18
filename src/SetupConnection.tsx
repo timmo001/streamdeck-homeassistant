@@ -1,8 +1,7 @@
 import React, { useState } from "react";
 import { SDButton, SDTextInput } from "react-streamdeck";
-import { lox } from "./Common/Common";
 
-import { HassConnectionState } from "./Types";
+import { HassConnectionState } from "./Common/Types";
 
 interface SetupConnectionProps {
   hassConnectionState: HassConnectionState;
@@ -29,12 +28,12 @@ export default function SetupConnection({
           </div>
           <div className="header">
             <h1>
-              {lox["setupConnectionTitle"] || "Connect to Home Assistant"}
+              {`lox["setupConnectionTitle"]` || "Connect to Home Assistant"}
             </h1>
           </div>
           <div id="content">
             <p>
-              {lox["setupConnectionDescription"] ||
+              {`lox["setupConnectionDescription"]` ||
                 "Connect a Home Assistant instance to access and control your home."}
             </p>
             <img
@@ -43,7 +42,7 @@ export default function SetupConnection({
             />
             <SDTextInput
               value={url}
-              label={lox["haUrl"] || "URL"}
+              label={`lox["haUrl"]` || "URL"}
               onChange={(event) => {
                 setUrl(event.target.value);
                 return {};
@@ -51,7 +50,7 @@ export default function SetupConnection({
             />
             <SDTextInput
               value={authToken}
-              label={lox["haAccessToken"] || "Long-Lived Access Token"}
+              label={`lox["haAccessToken"]` || "Long-Lived Access Token"}
               onChange={(event) => {
                 setAuthToken(event.target.value);
                 return {};
@@ -59,7 +58,7 @@ export default function SetupConnection({
             />
             <SDButton
               // disabled={!url || !url.startsWith("http") || !authToken}
-              text={lox["setupConnectionStart"] || "Connect"}
+              text={`lox["setupConnectionStart"]` || "Connect"}
               onClick={(_event: any) => {
                 console.log("Setup Connection - Connection");
                 handleHassLogin(url, authToken);
