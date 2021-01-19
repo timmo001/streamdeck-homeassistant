@@ -7,6 +7,7 @@
     "Tooltip": "This is the only action in this plugin"
   },
   "Localization": {
+    "connect": "Connect",
     "connection": "Connection",
     "connectionAdd": "Add connection..",
     "entity": "Entity",
@@ -15,7 +16,6 @@
     "url": "URL",
     "setupConnection": {
       "description": "Connect a Home Assistant instance to access and control your home.",
-      "start": "Connect",
       "title": "Connect to Home Assistant"
     }
   }

@@ -492,6 +492,38 @@ enum EventsSent {
   SEND_TO_PLUGIN = "sendToPlugin",
 }
 
+export function getLocalization(
+  inLanguage: string,
+  inCallback: (success: boolean, message: string) => void
+) {
+  var url = inLanguage + ".json";
+  var xhr = new XMLHttpRequest();
+  xhr.open("GET", url, true);
+
+  xhr.onload = () => {
+    if (xhr.readyState === XMLHttpRequest.DONE) {
+      try {
+        const data = JSON.parse(xhr.responseText);
+        inCallback(true, data["Localization"]);
+      } catch (e) {
+        inCallback(false, "Localizations is not a valid json.");
+      }
+    } else {
+      inCallback(false, "Could not load the localizations.");
+    }
+  };
+
+  xhr.onerror = () => {
+    inCallback(false, "An error occurred while loading the localizations.");
+  };
+
+  xhr.ontimeout = () => {
+    inCallback(false, "Localization timed out.");
+  };
+
+  xhr.send();
+}
+
 abstract class StreamDeck {
   private instances: StreamDeckInstance[] = [];
   static initialized = false;
@@ -564,16 +596,14 @@ abstract class StreamDeck {
         this.version = info.application.version;
         if (info.plugin) this.pluginVersion = info.plugin.version;
         if (this.language)
-          this.getLocalization(
-            this.language,
-            (success: boolean, message: string) => {
-              if (process.env.NODE_ENV === "development")
-                console.log("StreamDeck - getLocalization result:", {
-                  success,
-                  message,
-                });
-            }
-          );
+          getLocalization(this.language, (success: boolean, message: any) => {
+            if (process.env.NODE_ENV === "development")
+              console.log("StreamDeck - getLocalization result:", {
+                success,
+                message,
+              });
+            if (success) this.localization = message;
+          });
       }
       if (actionInfo) {
         this.globalSettings = actionInfo.payload.globalSettings;
@@ -888,39 +918,6 @@ abstract class StreamDeck {
       }
     }
     return true;
-  }
-
-  getLocalization(
-    inLanguage: string,
-    inCallback: (success: boolean, message: string) => void
-  ) {
-    var url = inLanguage + ".json";
-    var xhr = new XMLHttpRequest();
-    xhr.open("GET", url, true);
-
-    xhr.onload = () => {
-      if (xhr.readyState === XMLHttpRequest.DONE) {
-        try {
-          const data = JSON.parse(xhr.responseText);
-          this.localization = data["Localization"];
-          inCallback(true, data["Localization"]);
-        } catch (e) {
-          inCallback(false, "Localizations is not a valid json.");
-        }
-      } else {
-        inCallback(false, "Could not load the localizations.");
-      }
-    };
-
-    xhr.onerror = () => {
-      inCallback(false, "An error occurred while loading the localizations.");
-    };
-
-    xhr.ontimeout = () => {
-      inCallback(false, "Localization timed out.");
-    };
-
-    xhr.send();
   }
 }
 

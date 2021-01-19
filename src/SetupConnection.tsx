@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import queryString from "query-string";
 
-import { HassConnectionState } from "./Common/Types";
+import { getLocalization } from "./Common/StreamDeck";
+import { GenericObjectString, HassConnectionState } from "./Common/Types";
 
 interface SetupConnectionProps {
   hassConnectionState: HassConnectionState;
@@ -11,8 +13,24 @@ export default function SetupConnection({
   hassConnectionState,
   handleHassLogin,
 }: SetupConnectionProps) {
+  const [localization, setLocalization] = useState<GenericObjectString>();
   const [authToken, setAuthToken] = useState<string>("");
   const [url, setUrl] = useState<string>("http://homeassistant.local:8123");
+
+  useEffect(() => {
+    const qs = queryString.parse(window.location.search);
+    getLocalization(
+      qs.language.toString(),
+      (success: boolean, message: any) => {
+        if (process.env.NODE_ENV === "development")
+          console.log("SetupConnection - getLocalization result:", {
+            success,
+            message,
+          });
+        if (success) setLocalization(message);
+      }
+    );
+  }, []);
 
   return (
     <div className="main">
@@ -26,15 +44,10 @@ export default function SetupConnection({
             </div>
           </div>
           <div className="header">
-            <h1>
-              {`lox["setupConnection.title"]` || "Connect to Home Assistant"}
-            </h1>
+            <h1>{localization?.setupConnection?.["title"]}</h1>
           </div>
           <div id="content">
-            <p>
-              {`lox["setupConnection.description"]` ||
-                "Connect a Home Assistant instance to access and control your home."}
-            </p>
+            <p>{localization?.setupConnection?.["description"]}</p>
             <img
               className="image"
               alt="Home Assistant Logo"
@@ -43,7 +56,7 @@ export default function SetupConnection({
             <div className="sdpi-wrapper" id="pi">
               <div className="sdpi-item">
                 <label className="sdpi-item-label" htmlFor="ha-access-token">
-                  {`lox["url"]` || "URL"}
+                  {localization?.url}
                 </label>
                 <input
                   name="ha-url"
@@ -53,7 +66,7 @@ export default function SetupConnection({
               </div>
               <div className="sdpi-item">
                 <label className="sdpi-item-label" htmlFor="ha-access-token">
-                  Long-Lived Access Token
+                  {localization?.longLivedAccessToken}
                 </label>
                 <input
                   name="ha-access-token"
@@ -66,7 +79,7 @@ export default function SetupConnection({
                   disabled={!url || !url.startsWith("http") || !authToken}
                   onClick={(_event: any) => handleHassLogin(url, authToken)}
                 >
-                  Connect
+                  {localization?.connect}
                 </button>
               </div>
               <div className="sdpi-item">
