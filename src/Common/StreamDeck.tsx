@@ -443,7 +443,7 @@ enum Destination {
   SOFTWARE_ONLY,
 }
 
-enum EventsReceived {
+export enum EventsReceived {
   /**
    * Whenever a instance is initialized
    */

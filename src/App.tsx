@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, ReactElement } from "react";
 import {
   Auth,
   HassConfig,
@@ -13,7 +13,7 @@ import HomeAssistant, {
   handleChange as handleHassChange,
 } from "./HomeAssistant/HomeAssistant";
 
-export default function App() {
+export default function App(): ReactElement {
   const [hassAuth, setHassAuth] = useState<Auth>();
   const [hassAuthToken, setHassAuthToken] = useState<string>();
   const [hassConfig, setHassConfig] = useState<HassConfig>();

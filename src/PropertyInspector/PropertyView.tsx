@@ -1,15 +1,21 @@
-import React, { useMemo } from "react";
+import React, { ReactElement, useMemo } from "react";
 
-import { Option } from "../Common/Types";
+import { GlobalSettings, Option, Settings } from "../Common/Types";
 import { StreamDeckPropertyInspector } from "../Common/StreamDeck";
 
 interface PropertyViewProps {
   sdPropertyInspector: StreamDeckPropertyInspector;
+  globalSettings: GlobalSettings;
+  settings: Settings;
+  changeSetting: (key: keyof Settings, value: any) => void;
 }
 
 export default function PropertyView({
   sdPropertyInspector,
-}: PropertyViewProps) {
+  globalSettings,
+  settings,
+  changeSetting,
+}: PropertyViewProps): ReactElement {
   function handleAddHaConnection() {
     console.log("Add HA connection..");
     window.open(
@@ -19,38 +25,35 @@ export default function PropertyView({
 
   const haConnections: Option[] = useMemo(
     () =>
-      sdPropertyInspector.globalSettings &&
-      sdPropertyInspector.globalSettings.haConnections
+      globalSettings && globalSettings.haConnections
         ? [
             { label: "Select a connection..", value: "" },
-            ...sdPropertyInspector.globalSettings.haConnections.map(
-              ({ name, url }) => ({
-                label: name,
-                value: url,
-              })
-            ),
+            ...globalSettings.haConnections.map(({ name, url }) => ({
+              label: name,
+              value: url,
+            })),
             { label: `lox("haConnectionAdd")`, value: "add" },
           ]
         : [
             { label: "Select a connection..", value: "" },
             { label: `lox("haConnectionAdd")`, value: "add" },
           ],
-    [sdPropertyInspector.globalSettings]
+    [globalSettings]
   );
 
   const selectedHaConnection: string = useMemo(() => {
     const connection: Option =
-      sdPropertyInspector.settings &&
+      settings &&
       haConnections.find(
-        ({ value }: Option) =>
-          value === sdPropertyInspector.settings.haConnection
+        ({ value }: Option) => value === settings.haConnection
       );
     return connection ? connection.value : "";
-  }, [haConnections, sdPropertyInspector.settings]);
+  }, [haConnections, settings]);
 
   console.log("PropertyView:", {
     NODE_ENV: process.env.NODE_ENV,
-    sdPropertyInspector,
+    globalSettings,
+    settings,
   });
 
   return (
@@ -66,10 +69,7 @@ export default function PropertyView({
           onChange={(event) =>
             event.target.value === "add"
               ? handleAddHaConnection()
-              : sdPropertyInspector.currentInstance.setSetting(
-                  "haConnection",
-                  event.target.value
-                )
+              : changeSetting("haConnection", event.target.value)
           }
         >
           {haConnections.map(({ label, value }: Option) => (
@@ -86,22 +86,17 @@ export default function PropertyView({
         <input
           className="sdpi-item-value"
           name="ha-entity"
-          value={sdPropertyInspector.settings.haEntity}
-          onChange={(event) =>
-            sdPropertyInspector.currentInstance.setSetting(
-              "haEntity",
-              event.target.value
-            )
-          }
+          value={settings.haEntity}
+          onChange={(event) => changeSetting("haEntity", event.target.value)}
         />
         {/* <select
           className="sdpi-item-value select"
           name="ha-entity"
-          value={sdPropertyInspector.settings.haEntity}
+          value={settings.haEntity}
           onChange={(event) =>
             event.target.value === "add"
               ? handleAddHaConnection()
-              : sdPropertyInspector.currentInstance.setSetting(
+              : changeSetting(
                   "haEntity",
                   event.target.value
                 )
