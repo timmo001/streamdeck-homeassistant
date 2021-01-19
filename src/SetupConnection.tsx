@@ -1,27 +1,18 @@
-/* global $SD, lox */
-import React, { useEffect, useState } from "react";
+import React, { useState } from "react";
 
-import { createUseSDAction, SDButton, SDTextInput } from "react-streamdeck";
+import { HassConnectionState } from "./Common/Types";
 
-const useSDAction = createUseSDAction({
-  useState,
-  useEffect,
-});
+interface SetupConnectionProps {
+  hassConnectionState: HassConnectionState;
+  handleHassLogin: (url: string, authToken: string) => Promise<void>;
+}
 
-export default function SetupConnection() {
-  const connectedResult = useSDAction("connected");
-
-  const [url, setUrl] = useState("http://homeassistant.local:8123");
-
-  useEffect(() => {}, []);
-
-  console.log({
-    connectedResult,
-    // @ts-ignore
-    $SD,
-    // @ts-ignore
-    lox,
-  });
+export default function SetupConnection({
+  hassConnectionState,
+  handleHassLogin,
+}: SetupConnectionProps) {
+  const [authToken, setAuthToken] = useState<string>("");
+  const [url, setUrl] = useState<string>("http://homeassistant.local:8123");
 
   return (
     <div className="main">
@@ -35,35 +26,86 @@ export default function SetupConnection() {
             </div>
           </div>
           <div className="header">
-            {/* @ts-ignore */}
-            <h1>{lox("setupConnectionTitle")}</h1>
+            <h1>
+              {`lox["setupConnection.title"]` || "Connect to Home Assistant"}
+            </h1>
           </div>
           <div id="content">
-            {/* @ts-ignore */}
-            <p>{lox("setupConnectionDescription")}</p>
+            <p>
+              {`lox["setupConnection.description"]` ||
+                "Connect a Home Assistant instance to access and control your home."}
+            </p>
             <img
               className="image"
+              alt="Home Assistant Logo"
               src="https://brands.home-assistant.io/homeassistant/icon.png"
             />
-
-            <SDTextInput
-              value={url}
-              // @ts-ignore
-              label={lox("haConnection")}
-              onChange={(event) => {
-                setUrl(event.target.value);
-                return {};
-              }}
-            />
-
-            <SDButton
-              // @ts-ignore
-              text={lox("setupConnectionStart")}
-              // @ts-ignore
-              onClick={(_event: any) => {
-                console.log("Setup Connection - Connection");
-              }}
-            />
+            <div className="sdpi-wrapper" id="pi">
+              <div className="sdpi-item">
+                <label className="sdpi-item-label" htmlFor="ha-access-token">
+                  {`lox["url"]` || "URL"}
+                </label>
+                <input
+                  name="ha-url"
+                  value={url}
+                  onChange={(event) => setUrl(event.target.value)}
+                />
+              </div>
+              <div className="sdpi-item">
+                <label className="sdpi-item-label" htmlFor="ha-access-token">
+                  Long-Lived Access Token
+                </label>
+                <input
+                  name="ha-access-token"
+                  value={authToken}
+                  onChange={(event) => setAuthToken(event.target.value)}
+                />
+              </div>
+              <div className="sdpi-item">
+                <button
+                  disabled={!url || !url.startsWith("http") || !authToken}
+                  onClick={(_event: any) => handleHassLogin(url, authToken)}
+                >
+                  Connect
+                </button>
+              </div>
+              <div className="sdpi-item">
+                <h4
+                  style={{
+                    color:
+                      hassConnectionState === -1
+                        ? "white"
+                        : hassConnectionState === 0
+                        ? "green"
+                        : "red",
+                  }}
+                >
+                  {hassConnectionState === -2
+                    ? !url || !url.startsWith("http")
+                      ? "Invalid URL"
+                      : !authToken
+                      ? "Enter Long-Lived Access Token"
+                      : ""
+                    : hassConnectionState === -1
+                    ? "Connecting.."
+                    : hassConnectionState === 0
+                    ? "Connected!"
+                    : hassConnectionState === 1
+                    ? "Connection Error"
+                    : hassConnectionState === 2
+                    ? "Invalid Authentication"
+                    : hassConnectionState === 3
+                    ? "Connection Lost"
+                    : hassConnectionState === 4
+                    ? "Host Required"
+                    : hassConnectionState === 5
+                    ? "Invalid HTTPS to HTTP (HTTPS URL Required)"
+                    : hassConnectionState === 6
+                    ? "Unknown Error"
+                    : ""}
+                </h4>
+              </div>
+            </div>
           </div>
         </div>
       </div>
