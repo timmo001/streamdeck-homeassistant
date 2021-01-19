@@ -50,12 +50,6 @@ export default function PropertyView({
     return connection ? connection.value : "";
   }, [haConnections, settings]);
 
-  console.log("PropertyView:", {
-    NODE_ENV: process.env.NODE_ENV,
-    globalSettings,
-    settings,
-  });
-
   return (
     <div className="sdpi-wrapper" id="pi">
       <div className="sdpi-item">
@@ -79,17 +73,22 @@ export default function PropertyView({
           ))}
         </select>
       </div>
-      <div className="sdpi-item">
-        <label className="sdpi-item-label" htmlFor="ha-entity">
-          Entity
-        </label>
-        <input
-          className="sdpi-item-value"
-          name="ha-entity"
-          value={settings.haEntity}
-          onChange={(event) => changeSetting("haEntity", event.target.value)}
-        />
-        {/* <select
+      {selectedHaConnection && selectedHaConnection !== "" ? (
+        <>
+          <div className="sdpi-item">
+            <label className="sdpi-item-label" htmlFor="ha-entity">
+              Entity
+            </label>
+            <input
+              className="sdpi-item-value"
+              name="ha-entity"
+              value={settings.haEntity}
+              onChange={(event) =>
+                changeSetting("haEntity", event.target.value)
+              }
+            />
+          </div>
+          {/* <select
           className="sdpi-item-value select"
           name="ha-entity"
           value={settings.haEntity}
@@ -104,7 +103,10 @@ export default function PropertyView({
         >
           <option value="">Select an entity..</option>
         </select> */}
-      </div>
+        </>
+      ) : (
+        ""
+      )}
     </div>
   );
 }
