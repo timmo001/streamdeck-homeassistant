@@ -42,21 +42,6 @@ jobs:
           check-modified-files-only: no
           base-branch: master
           file-extension: .md
-      - name: ShellCheck
-        uses: ludeeus/action-shellcheck@0.5.0
-        with:
-          ignore: |
-            .devcontainer
-            .vscode
-            .yarn
-          check_together: yes
-      - name: YAMLLint
-        uses: ibiqlik/action-yamllint@v1.0.0
-        with:
-          file_or_dir: .
-          config_file: .yamllint.yml
-          format: colored
-          strict: false
   build:
     runs-on: ubuntu-latest
     steps:
