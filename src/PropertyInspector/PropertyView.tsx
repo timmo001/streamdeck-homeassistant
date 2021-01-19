@@ -27,7 +27,10 @@ export default function PropertyView({
     () =>
       globalSettings && globalSettings.haConnections
         ? [
-            { label: "Select a connection..", value: "" },
+            {
+              label: sdPropertyInspector.localization?.connectionSelect,
+              value: "",
+            },
             ...globalSettings.haConnections.map(({ name, url }) => ({
               label: name,
               value: url,
@@ -38,7 +41,10 @@ export default function PropertyView({
             },
           ]
         : [
-            { label: "Select a connection..", value: "" },
+            {
+              label: sdPropertyInspector.localization?.connectionSelect,
+              value: "",
+            },
             {
               label: sdPropertyInspector.localization?.connectionAdd,
               value: "add",

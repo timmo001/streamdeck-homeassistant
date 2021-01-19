@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
+/* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-use-before-define */
 // Originally Sourced from https://github.com/patrickbussmann/streamdeck-sdk/blob/51c1bd168c8aa23a714c51681f68f2fd62926933/StreamDeckSDK.ts
 import { GenericObjectString, GlobalSettings, Settings } from "./Types";
 
@@ -122,10 +122,16 @@ interface Event {
   event: EventsReceived | EventsSent;
 }
 
+export interface InitEvent extends Event {
+  detail: {
+    instance: StreamDeckInstance;
+  };
+}
+
 /**
  * Receivable events
  */
-interface DidReceiveSettingsEvent extends Event {
+export interface DidReceiveSettingsEvent extends Event {
   /**
    * The action unique identifier.
    */
@@ -167,7 +173,7 @@ interface DidReceiveSettingsEvent extends Event {
   };
 }
 
-interface DidReceiveGlobalSettingsEvent extends Event {
+export interface DidReceiveGlobalSettingsEvent extends Event {
   /**
    * A json object
    */
@@ -620,10 +626,10 @@ abstract class StreamDeck {
       }
     };
 
-    this.addEventListener(EventsReceived.INIT, (event) => {
+    this.addEventListener(EventsReceived.INIT, async (event) => {
       this.currentInstance = event.detail.instance;
-      this.currentInstance.getGlobalSettings();
-      this.currentInstance.getSettings();
+      this.globalSettings = await this.currentInstance.getGlobalSettings();
+      this.settings = await this.currentInstance.getSettings();
     });
 
     this.websocket.onmessage = (message) => {
@@ -720,13 +726,19 @@ abstract class StreamDeck {
 
   didReceiveGlobalSettings(data: DidReceiveGlobalSettingsEvent) {
     if (process.env.NODE_ENV === "development")
-      console.log("StreamDeck Event - didReceiveGlobalSettings:", { data });
+      console.log(
+        "StreamDeck Event - didReceiveGlobalSettings:",
+        data.payload.settings
+      );
     this.globalSettings = data.payload.settings;
   }
 
   didReceiveSettings(data: DidReceiveSettingsEvent) {
     if (process.env.NODE_ENV === "development")
-      console.log("StreamDeck Event - didReceiveSettings:", { data });
+      console.log(
+        "StreamDeck Event - didReceiveSettings:",
+        data.payload.settings
+      );
     this.settings = data.payload.settings;
   }
 
@@ -1072,7 +1084,9 @@ export class StreamDeckPropertyInspector extends StreamDeck {
   }
 }
 
-abstract class StreamDeckInstance extends StreamDeck {
+export class StreamDeckPlugin extends StreamDeck {}
+
+export abstract class StreamDeckInstance extends StreamDeck {
   action: string;
   context: string;
   device: string;
@@ -1175,7 +1189,7 @@ abstract class StreamDeckInstance extends StreamDeck {
   }
 }
 
-class StreamDeckPluginInstance extends StreamDeckInstance {
+export class StreamDeckPluginInstance extends StreamDeckInstance {
   sendToPlugin(event: SendToPluginEvent) {
     if (event.payload.hasOwnProperty("_internal")) {
       if (event.payload.action === EventsSent.SET_SETTINGS) {

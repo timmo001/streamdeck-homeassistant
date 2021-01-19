@@ -1,38 +1,71 @@
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
 
 import { GlobalSettings, SettingHaConnection, Settings } from "../Common/Types";
-import { StreamDeckPropertyInspector } from "../Common/StreamDeck";
+import {
+  DidReceiveGlobalSettingsEvent,
+  DidReceiveSettingsEvent,
+  EventsReceived,
+  InitEvent,
+  StreamDeckInstance,
+  StreamDeckPropertyInspector,
+} from "../Common/StreamDeck";
 import PropertyView from "./PropertyView";
 
 const sdPropertyInspector = new StreamDeckPropertyInspector();
 
 export default function PropertyInspector(): ReactElement {
-  const [globalSettings, setLocalGlobalSettings] = useState<GlobalSettings>();
-  const [settings, setLocalSettings] = useState<Settings>();
+  const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
+  const [settings, setSettings] = useState<Settings>();
   // const [settingsLoaded, setSettingsLoaded] = useState<boolean>(false);
 
   useEffect(() => {
-    // sdPropertyInspector.currentInstance.addEventListener(
-    //   EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
-    //   (data: DidReceiveGlobalSettingsEvent) => {
-    //     setLocalGlobalSettings(data.payload.settings);
-    //   }
-    // );
-    // sdPropertyInspector.currentInstance.addEventListener(
-    //   EventsReceived.DID_RECEIVE_SETTINGS,
-    //   (data: DidReceiveSettingsEvent) => {
-    //     setLocalSettings(data.payload.settings);
-    //   }
-    // );
+    // sdPropertyInspector.on(EventsReceived.INIT, async (event: InitEvent) => {
+    //   // Each init gives one instance (instance = 1 button on the Stream Deck)
+    //   // Instances having an `action` which you can check when you have multiple actions!
+    //   // i.e. if (instance.action === 'org.examle.firstaction') { }
+    //   const instance: StreamDeckInstance = event.detail.instance;
+    //   console.log("PI INIT:", instance);
+
+    //   const gs: GlobalSettings = await instance.getGlobalSettings();
+    //   console.log("PI GS:", gs);
+    //   const s: Settings = await instance.getSettings();
+    //   console.log("PI S:", s);
+
+    //   setGlobalSettings(gs);
+    //   setSettings(s);
+
+    //   // // We want also to listen for changed settings from the property inspector
+    //   // instance.on(
+    //   //   EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
+    //   //   (data: DidReceiveGlobalSettingsEvent) =>
+    //   //     setGlobalSettings(data.payload.settings)
+    //   // );
+    //   // instance.on(
+    //   //   EventsReceived.DID_RECEIVE_SETTINGS,
+    //   //   (data: DidReceiveSettingsEvent) => setSettings(data.payload.settings)
+    //   // );
+
+    //   // getLocalization(
+    //   //   sdPropertyInspector.language,
+    //   //   (success: boolean, message: any) => {
+    //   //     if (process.env.NODE_ENV === "development")
+    //   //       console.log("PropertyInspector - getLocalization result:", {
+    //   //         success,
+    //   //         message,
+    //   //       });
+    //   //     if (success) setLocalization(message);
+    //   //   }
+    //   // );
+    // });
     const waitForSettings = setInterval(() => {
       console.log("PropertyInspector - waitForSettings:", {
         globalSettings: sdPropertyInspector.globalSettings,
         settings: sdPropertyInspector.settings,
       });
       if (sdPropertyInspector.globalSettings && sdPropertyInspector.settings) {
-        setLocalGlobalSettings(sdPropertyInspector.globalSettings);
-        setLocalSettings(sdPropertyInspector.settings);
         clearInterval(waitForSettings);
+        setGlobalSettings(sdPropertyInspector.globalSettings);
+        setSettings(sdPropertyInspector.settings);
       }
     }, 500);
     return () => {
@@ -43,7 +76,7 @@ export default function PropertyInspector(): ReactElement {
   const changeGlobalSetting = useCallback(
     (key: keyof GlobalSettings, value: any) => {
       sdPropertyInspector.currentInstance.setGlobalSetting(key, value);
-      setLocalGlobalSettings({ ...globalSettings, [key]: value });
+      setGlobalSettings({ ...globalSettings, [key]: value });
     },
     [globalSettings]
   );
@@ -51,7 +84,7 @@ export default function PropertyInspector(): ReactElement {
   const changeSetting = useCallback(
     (key: keyof Settings, value: unknown) => {
       sdPropertyInspector.currentInstance.setSetting(key, value);
-      setLocalSettings({ ...settings, [key]: value });
+      setSettings({ ...settings, [key]: value });
     },
     [settings]
   );
