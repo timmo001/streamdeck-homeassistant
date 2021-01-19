@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 // Originally Sourced from https://github.com/patrickbussmann/streamdeck-sdk/blob/51c1bd168c8aa23a714c51681f68f2fd62926933/StreamDeckSDK.ts
-import { GlobalSettings, Settings } from "./Types";
+import { GenericObjectString, GlobalSettings, Settings } from "./Types";
 
 // @ts-ignore
 declare var global: any;
@@ -499,6 +500,7 @@ abstract class StreamDeck {
   globalSettings: GlobalSettings = {};
   info: any;
   language: string;
+  localization: GenericObjectString;
   platform: string;
   pluginVersion: string;
   settings: Settings = {};
@@ -561,6 +563,17 @@ abstract class StreamDeck {
         this.platform = info.application.platform;
         this.version = info.application.version;
         if (info.plugin) this.pluginVersion = info.plugin.version;
+        if (this.language)
+          this.getLocalization(
+            this.language,
+            (success: boolean, message: string) => {
+              if (process.env.NODE_ENV === "development")
+                console.log("StreamDeck - getLocalization result:", {
+                  success,
+                  message,
+                });
+            }
+          );
       }
       if (actionInfo) {
         this.globalSettings = actionInfo.payload.globalSettings;
@@ -876,6 +889,39 @@ abstract class StreamDeck {
     }
     return true;
   }
+
+  getLocalization(
+    inLanguage: string,
+    inCallback: (success: boolean, message: string) => void
+  ) {
+    var url = inLanguage + ".json";
+    var xhr = new XMLHttpRequest();
+    xhr.open("GET", url, true);
+
+    xhr.onload = () => {
+      if (xhr.readyState === XMLHttpRequest.DONE) {
+        try {
+          const data = JSON.parse(xhr.responseText);
+          this.localization = data["Localization"];
+          inCallback(true, data["Localization"]);
+        } catch (e) {
+          inCallback(false, "Localizations is not a valid json.");
+        }
+      } else {
+        inCallback(false, "Could not load the localizations.");
+      }
+    };
+
+    xhr.onerror = () => {
+      inCallback(false, "An error occurred while loading the localizations.");
+    };
+
+    xhr.ontimeout = () => {
+      inCallback(false, "Localization timed out.");
+    };
+
+    xhr.send();
+  }
 }
 
 export class StreamDeckSDK extends StreamDeck {}
@@ -886,7 +932,7 @@ export class StreamDeckPropertyInspector extends StreamDeck {
       const instance = event.detail.instance;
       const selectorString = "input, textarea, select";
 
-      const loadValue = (element) => {
+      const loadValue = (element: HTMLInputElement) => {
         if (instance.settings.hasOwnProperty(element.name || element.id)) {
           const value = instance.settings[element.name || element.id];
           if (element.type === "radio") {
@@ -897,7 +943,7 @@ export class StreamDeckPropertyInspector extends StreamDeck {
               `.sdpi-file-info[for="${element.id}"]`
             );
             if (labelElement) {
-              labelElement.textContent = value.replace(/^.*[\\\/]/, "");
+              labelElement.textContent = value.replace(/^.*[\\/]/, "");
             }
           } else {
             element.value = value;
@@ -905,8 +951,11 @@ export class StreamDeckPropertyInspector extends StreamDeck {
         }
       };
 
-      const saveValue = (element, targetObj?) => {
-        let value;
+      const saveValue = (
+        element: HTMLInputElement,
+        targetObj?: { [x: string]: any }
+      ) => {
+        let value: string | boolean;
 
         if (element.type === "checkbox") {
           value = element.checked;
@@ -921,7 +970,7 @@ export class StreamDeckPropertyInspector extends StreamDeck {
             `.sdpi-file-info[for="${element.id}"]`
           );
           if (labelElement) {
-            labelElement.textContent = value.replace(/^.*[\\\/]/, "");
+            labelElement.textContent = value.replace(/^.*[\\/]/, "");
           }
         } else {
           value = element.value;

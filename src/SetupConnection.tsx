@@ -27,12 +27,12 @@ export default function SetupConnection({
           </div>
           <div className="header">
             <h1>
-              {`lox["setupConnectionTitle"]` || "Connect to Home Assistant"}
+              {`lox["setupConnection.title"]` || "Connect to Home Assistant"}
             </h1>
           </div>
           <div id="content">
             <p>
-              {`lox["setupConnectionDescription"]` ||
+              {`lox["setupConnection.description"]` ||
                 "Connect a Home Assistant instance to access and control your home."}
             </p>
             <img
@@ -43,7 +43,7 @@ export default function SetupConnection({
             <div className="sdpi-wrapper" id="pi">
               <div className="sdpi-item">
                 <label className="sdpi-item-label" htmlFor="ha-access-token">
-                  {`lox["haUrl"]` || "URL"}
+                  {`lox["url"]` || "URL"}
                 </label>
                 <input
                   name="ha-url"

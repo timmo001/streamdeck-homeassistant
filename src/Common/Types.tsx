@@ -15,6 +15,10 @@ export type ProgressState = -2 | -1 | 1 | 2;
 // 6 - Unknown Error
 export type HassConnectionState = -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
+export interface GenericObjectString {
+  [key: string]: string;
+}
+
 export interface Option {
   label: string;
   value: string;

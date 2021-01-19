@@ -87,7 +87,10 @@ export default function PropertyInspector(): ReactElement {
         />
       ) : (
         <div className="sdpi-wrapper" id="pi">
-          <div className="sdpi-item">Loading Settings..</div>
+          <div className="sdpi-item">
+            {sdPropertyInspector.localization?.loadingSettings ||
+              "Loading Settings.."}
+          </div>
         </div>
       )}
     </>

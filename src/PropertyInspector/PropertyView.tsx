@@ -32,13 +32,19 @@ export default function PropertyView({
               label: name,
               value: url,
             })),
-            { label: `lox("haConnectionAdd")`, value: "add" },
+            {
+              label: sdPropertyInspector.localization?.connectionAdd,
+              value: "add",
+            },
           ]
         : [
             { label: "Select a connection..", value: "" },
-            { label: `lox("haConnectionAdd")`, value: "add" },
+            {
+              label: sdPropertyInspector.localization?.connectionAdd,
+              value: "add",
+            },
           ],
-    [globalSettings]
+    [globalSettings, sdPropertyInspector.localization]
   );
 
   const selectedHaConnection: string = useMemo(() => {
@@ -54,7 +60,7 @@ export default function PropertyView({
     <div className="sdpi-wrapper" id="pi">
       <div className="sdpi-item">
         <label className="sdpi-item-label" htmlFor="ha-connection">
-          Connection
+          {sdPropertyInspector.localization?.connection}
         </label>
         <select
           className="sdpi-item-value select"
@@ -77,7 +83,7 @@ export default function PropertyView({
         <>
           <div className="sdpi-item">
             <label className="sdpi-item-label" htmlFor="ha-entity">
-              Entity
+              {sdPropertyInspector.localization?.entity}
             </label>
             <input
               className="sdpi-item-value"
