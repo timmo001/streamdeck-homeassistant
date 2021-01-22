@@ -1,6 +1,6 @@
 import React, { useMemo, ReactElement } from "react";
 
-// import Code from "./Code/Code";
+import Code from "./Code/Code";
 import PropertyInspector from "./PropertyInspector/PropertyInspector";
 import SetupConnection from "./SetupConnection";
 
@@ -19,8 +19,8 @@ export default function App(): ReactElement {
       {page === "property-inspector" ? (
         <PropertyInspector />
       ) : page === "code" ? (
-        // <Code />
-        <></>
+        <Code />
+        // <></>
       ) : page === "setup-connection" ? (
         <SetupConnection />
       ) : (

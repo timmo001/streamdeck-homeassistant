@@ -1,76 +1,42 @@
 import React, { ReactElement, useCallback, useEffect, useState } from "react";
 
-import { GlobalSettings, SettingHaConnection, Settings } from "../Common/Types";
 import {
-  DidReceiveGlobalSettingsEvent,
-  DidReceiveSettingsEvent,
-  EventsReceived,
-  InitEvent,
+  GenericObjectString,
+  GlobalSettings,
+  SettingHaConnection,
+  Settings,
+} from "../Common/Types";
+import {
   StreamDeckInstance,
   StreamDeckPropertyInspector,
 } from "../Common/StreamDeck";
 import PropertyView from "./PropertyView";
 
-const sdPropertyInspector = new StreamDeckPropertyInspector();
+let sdPropertyInspector: StreamDeckPropertyInspector;
 
 export default function PropertyInspector(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
   const [settings, setSettings] = useState<Settings>();
-  // const [settingsLoaded, setSettingsLoaded] = useState<boolean>(false);
+  const [localization, setLocalization] = useState<GenericObjectString>();
 
   useEffect(() => {
-    // sdPropertyInspector.on(EventsReceived.INIT, async (event: InitEvent) => {
-    //   // Each init gives one instance (instance = 1 button on the Stream Deck)
-    //   // Instances having an `action` which you can check when you have multiple actions!
-    //   // i.e. if (instance.action === 'org.examle.firstaction') { }
-    //   const instance: StreamDeckInstance = event.detail.instance;
-    //   console.log("PI INIT:", instance);
-
-    //   const gs: GlobalSettings = await instance.getGlobalSettings();
-    //   console.log("PI GS:", gs);
-    //   const s: Settings = await instance.getSettings();
-    //   console.log("PI S:", s);
-
-    //   setGlobalSettings(gs);
-    //   setSettings(s);
-
-    //   // // We want also to listen for changed settings from the property inspector
-    //   // instance.on(
-    //   //   EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
-    //   //   (data: DidReceiveGlobalSettingsEvent) =>
-    //   //     setGlobalSettings(data.payload.settings)
-    //   // );
-    //   // instance.on(
-    //   //   EventsReceived.DID_RECEIVE_SETTINGS,
-    //   //   (data: DidReceiveSettingsEvent) => setSettings(data.payload.settings)
-    //   // );
-
-    //   // getLocalization(
-    //   //   sdPropertyInspector.language,
-    //   //   (success: boolean, message: any) => {
-    //   //     if (process.env.NODE_ENV === "development")
-    //   //       console.log("PropertyInspector - getLocalization result:", {
-    //   //         success,
-    //   //         message,
-    //   //       });
-    //   //     if (success) setLocalization(message);
-    //   //   }
-    //   // );
-    // });
-    const waitForSettings = setInterval(() => {
-      console.log("PropertyInspector - waitForSettings:", {
-        globalSettings: sdPropertyInspector.globalSettings,
-        settings: sdPropertyInspector.settings,
-      });
-      if (sdPropertyInspector.globalSettings && sdPropertyInspector.settings) {
-        clearInterval(waitForSettings);
-        setGlobalSettings(sdPropertyInspector.globalSettings);
-        setSettings(sdPropertyInspector.settings);
-      }
-    }, 500);
-    return () => {
-      waitForSettings && clearInterval(waitForSettings);
-    };
+    console.log("PropertyInspector - useEffect[]");
+    sdPropertyInspector = new StreamDeckPropertyInspector();
+    sdPropertyInspector
+      .getData()
+      .then(
+        (data: {
+          instance: StreamDeckInstance;
+          globalSettings: GlobalSettings;
+          settings: Settings;
+          localization: GenericObjectString;
+        }) => {
+          console.log("PropertyInspector - getData:", data);
+          setGlobalSettings(data.globalSettings);
+          setSettings(data.settings);
+          setLocalization(data.localization);
+        }
+      );
   }, []);
 
   const changeGlobalSetting = useCallback(
@@ -109,6 +75,13 @@ export default function PropertyInspector(): ReactElement {
     document.addEventListener("saveConnection", saveConnection);
   }, [saveConnection]);
 
+  console.log("PropertyInspector:", {
+    sdPropertyInspector,
+    globalSettings,
+    settings,
+    localization,
+  });
+
   return (
     <>
       {globalSettings && settings ? (
@@ -116,14 +89,12 @@ export default function PropertyInspector(): ReactElement {
           sdPropertyInspector={sdPropertyInspector}
           globalSettings={globalSettings}
           settings={settings}
+          localization={localization}
           changeSetting={changeSetting}
         />
       ) : (
         <div className="sdpi-wrapper" id="pi">
-          <div className="sdpi-item">
-            {sdPropertyInspector.localization?.loadingSettings ||
-              "Loading Settings.."}
-          </div>
+          <div className="sdpi-item">Loading Settings..</div>
         </div>
       )}
     </>

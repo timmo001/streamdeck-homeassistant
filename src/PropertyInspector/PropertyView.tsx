@@ -1,12 +1,18 @@
 import React, { ReactElement, useMemo } from "react";
 
-import { GlobalSettings, Option, Settings } from "../Common/Types";
+import {
+  GenericObjectString,
+  GlobalSettings,
+  Option,
+  Settings,
+} from "../Common/Types";
 import { StreamDeckPropertyInspector } from "../Common/StreamDeck";
 
 interface PropertyViewProps {
   sdPropertyInspector: StreamDeckPropertyInspector;
   globalSettings: GlobalSettings;
   settings: Settings;
+  localization: GenericObjectString;
   changeSetting: (key: keyof Settings, value: any) => void;
 }
 
@@ -14,6 +20,7 @@ export default function PropertyView({
   sdPropertyInspector,
   globalSettings,
   settings,
+  localization,
   changeSetting,
 }: PropertyViewProps): ReactElement {
   function handleAddHaConnection() {
@@ -28,7 +35,7 @@ export default function PropertyView({
       globalSettings && globalSettings.haConnections
         ? [
             {
-              label: sdPropertyInspector.localization?.connectionSelect,
+              label: localization?.connectionSelect,
               value: "",
             },
             ...globalSettings.haConnections.map(({ name, url }) => ({
@@ -36,21 +43,21 @@ export default function PropertyView({
               value: url,
             })),
             {
-              label: sdPropertyInspector.localization?.connectionAdd,
+              label: localization?.connectionAdd,
               value: "add",
             },
           ]
         : [
             {
-              label: sdPropertyInspector.localization?.connectionSelect,
+              label: localization?.connectionSelect,
               value: "",
             },
             {
-              label: sdPropertyInspector.localization?.connectionAdd,
+              label: localization?.connectionAdd,
               value: "add",
             },
           ],
-    [globalSettings, sdPropertyInspector.localization]
+    [globalSettings, localization]
   );
 
   const selectedHaConnection: string = useMemo(() => {
@@ -66,7 +73,7 @@ export default function PropertyView({
     <div className="sdpi-wrapper" id="pi">
       <div className="sdpi-item">
         <label className="sdpi-item-label" htmlFor="ha-connection">
-          {sdPropertyInspector.localization?.connection}
+          {localization?.connection}
         </label>
         <select
           className="sdpi-item-value select"
@@ -89,7 +96,7 @@ export default function PropertyView({
         <>
           <div className="sdpi-item">
             <label className="sdpi-item-label" htmlFor="ha-entity">
-              {sdPropertyInspector.localization?.entity}
+              {localization?.entity}
             </label>
             <input
               className="sdpi-item-value"
