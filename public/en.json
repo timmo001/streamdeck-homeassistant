@@ -11,6 +11,7 @@
     "connection": "Connection",
     "connectionAdd": "Add connection..",
     "connectionSelect": "Select a connection..",
+    "entitiesSelect": "Select an Entity..",
     "entity": "Entity",
     "loadingSettings": "Loading Settings..",
     "longLivedAccessToken": "Long-Lived Access Token",

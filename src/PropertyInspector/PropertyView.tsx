@@ -1,4 +1,5 @@
 import React, { ReactElement, useMemo } from "react";
+import { HassEntities, HassEntity } from "home-assistant-js-websocket";
 
 import {
   GenericObjectString,
@@ -13,6 +14,7 @@ interface PropertyViewProps {
   globalSettings: GlobalSettings;
   settings: Settings;
   localization: GenericObjectString;
+  hassEntities: HassEntities;
   changeSetting: (key: keyof Settings, value: any) => void;
 }
 
@@ -21,6 +23,7 @@ export default function PropertyView({
   globalSettings,
   settings,
   localization,
+  hassEntities,
   changeSetting,
 }: PropertyViewProps): ReactElement {
   function handleAddHaConnection() {
@@ -60,54 +63,116 @@ export default function PropertyView({
     [globalSettings, localization]
   );
 
-  const selectedHaConnection: string = useMemo(() => {
+  const haConnection: Option = useMemo(() => {
     const connection: Option =
       settings &&
       haConnections.find(
         ({ value }: Option) => value === settings.haConnection
       );
-    return connection ? connection.value : "";
+    return connection;
   }, [haConnections, settings]);
 
+  const haEntitesOptions: Option[] = useMemo(() => {
+    if (hassEntities) {
+      const options: Option[] = Object.values(hassEntities)
+        .filter(
+          (entity: HassEntity) => !entity.entity_id.startsWith("device_tracker")
+        )
+        .sort((a: HassEntity, b: HassEntity) =>
+          a.entity_id > b.entity_id ? 1 : a.entity_id < b.entity_id ? -1 : 0
+        )
+        .map((entity: HassEntity) => ({
+          label: entity.attributes?.friendly_name
+            ? `${entity.attributes?.friendly_name} - ${entity.entity_id}`
+            : entity.entity_id,
+          value: entity.entity_id,
+        }));
+      options.unshift({
+        label: localization?.entitiesSelect,
+        value: "",
+      });
+      return options;
+    } else
+      return [
+        {
+          label: localization?.entitiesSelect,
+          value: "",
+        },
+      ];
+  }, [hassEntities, localization?.entitiesSelect]);
+
   return (
-    <div className="sdpi-wrapper" id="pi">
-      <div className="sdpi-item">
-        <label className="sdpi-item-label" htmlFor="ha-connection">
-          {localization?.connection}
-        </label>
-        <select
-          className="sdpi-item-value select"
-          name="ha-connection"
-          value={selectedHaConnection}
-          onChange={(event) =>
-            event.target.value === "add"
-              ? handleAddHaConnection()
-              : changeSetting("haConnection", event.target.value)
-          }
-        >
-          {haConnections.map(({ label, value }: Option) => (
-            <option key={value} value={value}>
-              {label}
-            </option>
-          ))}
-        </select>
-      </div>
-      {selectedHaConnection && selectedHaConnection !== "" ? (
-        <>
-          <div className="sdpi-item">
-            <label className="sdpi-item-label" htmlFor="ha-entity">
-              {localization?.entity}
-            </label>
-            <input
-              className="sdpi-item-value"
-              name="ha-entity"
-              value={settings.haEntity}
-              onChange={(event) =>
-                changeSetting("haEntity", event.target.value)
+    <div className="spdi-wrapper">
+      <div id="sdWrapper">
+        <div className="sdpi-item">
+          <div className="sdpi-item-label">{localization?.connection}</div>
+          <select
+            className="sdpi-item-value select sdProperty"
+            id="ha-connection"
+            value={haConnection?.value || ""}
+            onChange={(event) =>
+              event.target.value === "add"
+                ? handleAddHaConnection()
+                : changeSetting("haConnection", event.target.value)
+            }
+          >
+            {haConnections.map(({ label, value }: Option) => (
+              <option key={value} value={value}>
+                {label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {haConnection && haConnection.value !== "" ? (
+          <>
+            <div className="sdpi-item">
+              <div className="sdpi-item-label">{localization?.entity}</div>
+              <select
+                className="sdpi-item-value select sdProperty sdList"
+                id="ha-entity"
+                value={settings.haEntity || ""}
+                onChange={(event) =>
+                  event.target.value === "add"
+                    ? handleAddHaConnection()
+                    : changeSetting("haEntity", event.target.value)
+                }
+              >
+                {haEntitesOptions.map(({ label, value }: Option) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+              {/* <Autocomplete
+              className="sdpi-item-value sdProperty"
+              id="ha-entity"
+              clearOnEscape
+              disableListWrap
+              disablePortal
+              openOnFocus
+              options={haEntitesOptions}
+              value={settings.haEntity || null}
+              getOptionLabel={(option: Option): string => option.label || ""}
+              getOptionSelected={(option: Option): boolean =>
+                option.value === settings.haEntity
               }
-            />
-          </div>
-          {/* <select
+              // style={{ width: 300 }}
+              renderInput={(params) => (
+                <TextField
+                  {...params}
+                  // label={localization?.entity}
+                  variant="standard"
+                  margin="dense"
+                />
+              )}
+              onChange={(_event: any, value: Option) =>
+                changeSetting("haEntity", value.value)
+              }
+            /> */}
+            </div>
+
+            {/* <select
           className="sdpi-item-value select"
           name="ha-entity"
           value={settings.haEntity}
@@ -122,10 +187,11 @@ export default function PropertyView({
         >
           <option value="">Select an entity..</option>
         </select> */}
-        </>
-      ) : (
-        ""
-      )}
+          </>
+        ) : (
+          ""
+        )}
+      </div>
     </div>
   );
 }
