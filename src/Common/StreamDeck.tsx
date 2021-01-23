@@ -594,15 +594,6 @@ abstract class StreamDeck {
         uuid: this.uuid,
       });
 
-      if (process.env.NODE_ENV === "development")
-        console.log("StreamDeck - init:", {
-          actionInfo,
-          info,
-          inPort,
-          inRegisterEvent,
-          inUUID,
-        });
-
       if (info) {
         this.language = info.application.language;
         this.platform = info.application.platform;
@@ -694,12 +685,10 @@ abstract class StreamDeck {
   }> {
     await new Promise<void>((resolve) =>
       this.addEventListener(EventsReceived.INIT, (event: InitEvent) => {
-        console.log("StreamDeck - getData getCurrentInstance result:", event);
         this.currentInstance = event.detail.instance;
         resolve();
       })
     );
-    console.log("StreamDeck - getData currentInstance:", this.currentInstance);
 
     if (plugin)
       this.currentInstance.sendEvent(
@@ -708,42 +697,21 @@ abstract class StreamDeck {
         this.uuid
       );
     else this.currentInstance.sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
-    await new Promise<void>((resolve) => {
-      console.log("StreamDeck - getData getGlobalSettings promise");
+    await new Promise<void>((resolve) =>
       this.addEventListener(
         EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
         (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
-          console.log(
-            "StreamDeck - getData getGlobalSettings result:",
-            event.detail.payload.settings
-          );
           this.globalSettings = event.detail.payload.settings;
           resolve();
         }
-      );
-      console.log(
-        "StreamDeck - getData getGlobalSettings promise currentInstance:",
-        this.currentInstance
-      );
-    });
+      )
+    );
 
-    // if (plugin)
-    //   this.currentInstance.sendEvent(
-    //     EventsSent.GET_SETTINGS,
-    //     undefined,
-    //     this.uuid
-    //   );
-    // else
     this.currentInstance.sendEvent(EventsSent.GET_SETTINGS);
     await new Promise<void>((resolve) => {
-      console.log("StreamDeck - getData getSettings promise");
       this.addEventListener(
         EventsReceived.DID_RECEIVE_SETTINGS,
         (event: DidReceiveEvent<{ settings: Settings }>) => {
-          console.log(
-            "StreamDeck - getData getSettings result:",
-            event.detail.payload.settings
-          );
           this.settings = event.detail.payload.settings;
           resolve();
         }
@@ -1044,21 +1012,6 @@ export abstract class StreamDeckInstance extends StreamDeck {
     this.uuid = uuid;
   }
 
-  // getGlobalSettings(): Promise<GlobalSettings> {
-  //   console.log("StreamDeck - getGlobalSettings");
-  //   return new Promise<GlobalSettings>((resolve, _reject) => {
-  //     console.log("StreamDeck - getGlobalSettings promise");
-  //     this.addEventListener(
-  //       EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
-  //       (event) => {
-  //         console.log("StreamDeck - getGlobalSettings result:", event);
-  //         resolve(event);
-  //       }
-  //     );
-  //     this.sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
-  //   });
-  // }
-
   setGlobalSetting(key: keyof GlobalSettings, value: any) {
     if (!this.globalSettings) this.globalSettings = {};
     this.globalSettings[key] = value;
@@ -1072,20 +1025,6 @@ export abstract class StreamDeckInstance extends StreamDeck {
   setGlobalSettings(settings: GlobalSettings) {
     this.sendEvent(EventsSent.SET_GLOBAL_SETTINGS, settings, this.uuid);
   }
-
-  // async getSettings(): Promise<Settings> {
-  //   console.log("StreamDeck - getSettings");
-  //   return new Promise<Settings>((resolve, _reject) => {
-  //     this.addEventListener(
-  //       EventsReceived.DID_RECEIVE_SETTINGS,
-  //       (event: { detail: Settings }) => {
-  //         console.log("StreamDeck - getSettings result:", event.detail);
-  //         resolve(event.detail);
-  //       }
-  //     );
-  //     this.sendEvent(EventsSent.GET_SETTINGS);
-  //   });
-  // }
 
   setSetting(key: keyof Settings, value: any) {
     if (!this.settings) this.settings = {};

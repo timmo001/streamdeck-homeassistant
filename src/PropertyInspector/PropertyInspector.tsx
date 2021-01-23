@@ -21,7 +21,6 @@ export default function PropertyInspector(): ReactElement {
 
   useEffect(() => {
     if (!sdPropertyInspector) {
-      console.log("PropertyInspector - useEffect[]");
       sdPropertyInspector = new StreamDeckPropertyInspector();
       sdPropertyInspector
         .getData(false)
@@ -32,7 +31,7 @@ export default function PropertyInspector(): ReactElement {
             settings: Settings;
             localization: GenericObjectString;
           }) => {
-            console.log("PropertyInspector - getData:", data);
+            console.log("PropertyInspector - getData result:", data);
             setGlobalSettings(data.globalSettings);
             setSettings(data.settings);
             setLocalization(data.localization);

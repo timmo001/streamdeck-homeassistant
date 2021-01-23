@@ -30,23 +30,21 @@ export default function Code(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
   const [settings, setSettings] = useState<Settings>();
   const [sdInstance, setSdInstance] = useState<StreamDeckPluginInstance>();
-  const [localization, setLocalization] = useState<GenericObjectString>();
+  const [, setLocalization] = useState<GenericObjectString>();
   const [title, setTitle] = useState<string>("");
-  // const [eventsSetup, setEventsSetup] = useState<boolean>(false);
 
   const [, setHassAuth] = useState<Auth>();
-  const [hassConfig, setHassConfig] = useState<HassConfig>();
+  const [, setHassConfig] = useState<HassConfig>();
   const [hassConnection, setHassConnection] = useState<SettingHaConnection>();
   const [
     hassConnectionState,
     setHassConnectionState,
   ] = useState<HassConnectionState>(-2);
   const [hassEntities, setHassEntities] = useState<HassEntities>();
-  const [hassUser, setUser] = useState<HassUser>();
+  const [, setUser] = useState<HassUser>();
 
   useEffect(() => {
     if (!sdPlugin) {
-      console.log("Code - useEffect[]");
       sdPlugin = new StreamDeckPlugin();
       sdPlugin
         .getData(true)
@@ -57,7 +55,7 @@ export default function Code(): ReactElement {
             settings: Settings;
             localization: GenericObjectString;
           }) => {
-            console.log("PropertyInspector - getData:", data);
+            console.log("Code - getData result:", data);
             setSdInstance(data.instance);
             setGlobalSettings(data.globalSettings);
             setSettings(data.settings);
@@ -131,8 +129,6 @@ export default function Code(): ReactElement {
       sdInstance.on(EventsReceived.KEY_UP, handleKeyUp);
     }
   }, [sdInstance, handleKeyUp]);
-
-  // console.log("Code:", { sdPlugin, sdInstance, globalSettings, settings });
 
   return (
     <>
