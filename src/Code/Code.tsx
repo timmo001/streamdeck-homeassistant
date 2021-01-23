@@ -15,6 +15,7 @@ import {
   Settings,
 } from "../Common/Types";
 import {
+  DidReceiveEvent,
   EventsReceived,
   StreamDeckPlugin,
   StreamDeckPluginInstance,
@@ -130,6 +131,18 @@ export default function Code(): ReactElement {
     if (sdInstance) {
       sdInstance.clearEventListeners(EventsReceived.KEY_UP);
       sdInstance.on(EventsReceived.KEY_UP, handleKeyUp);
+      sdInstance.on(
+        EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
+        (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
+          setGlobalSettings(event.detail.payload.settings);
+        }
+      );
+      sdInstance.on(
+        EventsReceived.DID_RECEIVE_SETTINGS,
+        (event: DidReceiveEvent<{ settings: Settings }>) => {
+          setSettings(event.detail.payload.settings);
+        }
+      );
     }
   }, [sdInstance, handleKeyUp]);
 
