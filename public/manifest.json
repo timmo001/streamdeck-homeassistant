@@ -11,15 +11,15 @@
   "Version": "1.0.0",
   "Actions": [
     {
-      "Icon": "action/images/actionimage",
-      "Name": "Script",
+      "Icon": "plugin/images/actions/entity",
+      "Name": "Entity",
       "States": [
         {
-          "Image": "plugin/images/icons/script"
+          "Image": "plugin/images/icons/entity"
         }
       ],
-      "Tooltip": "Trigger a Script",
-      "UUID": "dev.timmo.homeassistant.script"
+      "Tooltip": "A Home Assistant Entity",
+      "UUID": "dev.timmo.homeassistant.entity"
     }
   ],
   "CodePath": "code.html",

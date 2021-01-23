@@ -6,6 +6,8 @@
   "private": true,
   "dependencies": {
     "@babel/core": "7.12.10",
+    "@mdi/js": "5.9.55",
+    "@mdi/react": "1.4.0",
     "@pmmmwh/react-refresh-webpack-plugin": "0.4.3",
     "@svgr/webpack": "5.5.0",
     "@typescript-eslint/eslint-plugin": "^4.5.0",

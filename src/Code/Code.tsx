@@ -112,16 +112,20 @@ export default function Code(): ReactElement {
       const { entity_id, state }: HassEntity = hassEntities[settings.haEntity];
       if (entity_id) {
         const domain: string = entity_id.split(".")[0];
-        handleHassChange(
-          domain,
-          state === "off" || domain === "script" ? "turn_on" : "turn_off",
-          {
-            entity_id,
-          }
-        );
+        if (
+          handleHassChange(
+            domain,
+            state === "off" || domain === "script" ? "turn_on" : "turn_off",
+            {
+              entity_id,
+            }
+          )
+        )
+          sdInstance.showOk();
+        else sdInstance.showAlert();
       }
     }
-  }, [globalSettings, settings, hassEntities]);
+  }, [sdInstance, globalSettings, settings, hassEntities]);
 
   useEffect(() => {
     if (sdInstance) {

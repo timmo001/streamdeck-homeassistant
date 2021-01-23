@@ -47,54 +47,52 @@ export interface HomeAssistantChangeProps {
 
 let connection: Connection;
 
-export function handleChange(
+export async function handleChange(
   domain: string,
   state: string,
   data?: { [key: string]: any },
   entities?: HassEntities
-): void {
+): Promise<boolean> {
   if (domain === "group" && entities && data) {
-    entities[data.entity_id].attributes.entity_id.map((entity: string) =>
-      callService(
-        connection,
-        entity.split(".")[0],
-        state ? "turn_on" : "turn_off",
-        { entity_id: entity }
-      ).then(
-        () => {
-          console.log(
-            "HomeAssistant - Group called service:",
-            domain,
-            state,
-            data
-          );
-        },
-        (err) => {
-          console.error(
-            "HomeAssistant - Error calling group service:",
-            domain,
-            state,
-            data,
-            err
-          );
-        }
-      )
-    );
-  } else
-    callService(connection, domain, state, data).then(
-      () => {
-        console.log("HomeAssistant - Called service:", domain, state, data);
-      },
-      (err) => {
-        console.error(
-          "HomeAssistant - Error calling service:",
+    entities[data.entity_id].attributes.entity_id.map(
+      async (entity: string) => {
+        await callService(
+          connection,
+          entity.split(".")[0],
+          state ? "turn_on" : "turn_off",
+          { entity_id: entity }
+        );
+        console.log(
+          "HomeAssistant - Group called service:",
           domain,
           state,
-          data,
-          err
+          data
         );
+        // (err) => {
+        //   console.error(
+        //     "HomeAssistant - Error calling group service:",
+        //     domain,
+        //     state,
+        //     data,
+        //     err
+        //   );
+        //   return false;
       }
     );
+  } else {
+    await callService(connection, domain, state, data);
+    console.log("HomeAssistant - Called service:", domain, state, data);
+    // (err) => {
+    //   console.error(
+    //     "HomeAssistant - Error calling service:",
+    //     domain,
+    //     state,
+    //     data,
+    //     err
+    //   );
+    // }
+  }
+  return true;
 }
 
 function HomeAssistant(props: HomeAssistantProps): any {

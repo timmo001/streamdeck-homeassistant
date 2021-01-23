@@ -1,10 +1,10 @@
 {
-  "Description": "Use this to create your own plugin",
-  "Name": "Stream Deck Template",
-  "Category": "Templates",
-  "com.elgato.template.action": {
-    "Name": "Action",
-    "Tooltip": "This is the only action in this plugin"
+  "Name": "Home Assistant",
+  "Category": "Home Assistant",
+  "Description": "Access and control your Home Assistant instance",
+  "dev.timmo.homeassistant.entity": {
+    "Name": "Entity",
+    "Tooltip": "A Home Assistant Entity"
   },
   "Localization": {
     "connect": "Connect",
