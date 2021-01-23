@@ -26,51 +26,18 @@ export default function PropertyView({
   hassEntities,
   changeSetting,
 }: PropertyViewProps): ReactElement {
-  function handleAddHaConnection() {
-    console.log("Add HA connection..");
-    window.open(
-      `./setup-connection.html?language=${sdPropertyInspector.language}&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${sdPropertyInspector.pluginVersion}`
-    );
-  }
-
-  const haConnections: Option[] = useMemo(
-    () =>
-      globalSettings && globalSettings.haConnections
-        ? [
-            {
-              label: localization?.connectionSelect,
-              value: "",
-            },
-            ...globalSettings.haConnections.map(({ name, url }) => ({
-              label: name,
-              value: url,
-            })),
-            {
-              label: localization?.connectionAdd,
-              value: "add",
-            },
-          ]
-        : [
-            {
-              label: localization?.connectionSelect,
-              value: "",
-            },
-            {
-              label: localization?.connectionAdd,
-              value: "add",
-            },
-          ],
-    [globalSettings, localization]
-  );
-
-  const haConnection: Option = useMemo(() => {
-    const connection: Option =
-      settings &&
-      haConnections.find(
-        ({ value }: Option) => value === settings.haConnection
+  function handleSetupHaConnection() {
+    console.log("Setup HA connection..");
+    let confirmed: boolean = true;
+    if (globalSettings?.haConnection)
+      confirmed = window.confirm(localization?.connectionReSetupConfirm);
+    if (confirmed) {
+      changeSetting("haEntity", undefined);
+      window.open(
+        `./setup-connection.html?language=${sdPropertyInspector.language}&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${sdPropertyInspector.pluginVersion}`
       );
-    return connection;
-  }, [haConnections, settings]);
+    }
+  }
 
   const haEntitesOptions: Option[] = useMemo(() => {
     if (hassEntities) {
@@ -106,25 +73,14 @@ export default function PropertyView({
       <div id="sdWrapper">
         <div className="sdpi-item">
           <div className="sdpi-item-label">{localization?.connection}</div>
-          <select
-            className="sdpi-item-value select sdProperty"
-            id="ha-connection"
-            value={haConnection?.value || ""}
-            onChange={(event) =>
-              event.target.value === "add"
-                ? handleAddHaConnection()
-                : changeSetting("haConnection", event.target.value)
-            }
-          >
-            {haConnections.map(({ label, value }: Option) => (
-              <option key={value} value={value}>
-                {label}
-              </option>
-            ))}
-          </select>
+          <button className="sdpi-item-value" onClick={handleSetupHaConnection}>
+            {globalSettings?.haConnection
+              ? localization?.connectionReSetup
+              : localization?.connectionSetup}
+          </button>
         </div>
 
-        {haConnection && haConnection.value !== "" ? (
+        {globalSettings?.haConnection ? (
           <>
             <div className="sdpi-item">
               <div className="sdpi-item-label">{localization?.entity}</div>
@@ -134,7 +90,7 @@ export default function PropertyView({
                 value={settings.haEntity || ""}
                 onChange={(event) =>
                   event.target.value === "add"
-                    ? handleAddHaConnection()
+                    ? handleSetupHaConnection()
                     : changeSetting("haEntity", event.target.value)
                 }
               >

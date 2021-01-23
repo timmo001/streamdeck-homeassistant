@@ -191,7 +191,7 @@ export interface DidReceiveGlobalSettingsEvent extends Event {
   };
 }
 
-interface KeyDownEvent extends Event {
+export interface KeyDownEvent extends Event {
   /**
    * The action's unique identifier. If your plugin supports multiple actions, you should use this value to see which action was triggered.
    */
@@ -246,7 +246,7 @@ interface KeyDownEvent extends Event {
   };
 }
 
-interface KeyUpEvent extends KeyDownEvent {}
+export interface KeyUpEvent extends KeyDownEvent {}
 
 interface WillAppearEvent extends Event {
   /**
@@ -442,6 +442,18 @@ interface SendToPluginEvent extends Event {
 
 interface SendToPropertyInspectorEvent extends SendToPluginEvent {}
 
+export interface StreamDeckItem {
+  instance: StreamDeckInstance;
+  settings: Settings;
+  title?: string;
+}
+
+export interface StreamDeckPluginItem {
+  instance: StreamDeckPluginInstance;
+  settings: Settings;
+  title?: string;
+}
+
 enum DeviceType {
   KESDSDKDeviceType_StreamDeck,
   KESDSDKDeviceType_StreamDeckMini,
@@ -541,7 +553,6 @@ abstract class StreamDeck {
   private instances: StreamDeckInstance[] = [];
   static initialized = false;
   actionInfo: any;
-  currentInstance: StreamDeckInstance;
   globalSettings: GlobalSettings;
   info: any;
   language: string;
@@ -622,6 +633,8 @@ abstract class StreamDeck {
           },
         } as any);
       }
+
+      console.log("StreamDeck - init:", this);
     };
 
     this.websocket.onmessage = (message) => {
@@ -678,25 +691,24 @@ abstract class StreamDeck {
   async getData(
     plugin: boolean
   ): Promise<{
-    instance: StreamDeckInstance;
     globalSettings: GlobalSettings;
-    settings: Settings;
     localization: GenericObjectString;
+    items: StreamDeckItem[];
   }> {
-    await new Promise<void>((resolve) =>
+    const instance = await new Promise<StreamDeckInstance>((resolve) =>
       this.addEventListener(EventsReceived.INIT, (event: InitEvent) => {
-        this.currentInstance = event.detail.instance;
-        resolve();
+        resolve(event.detail.instance);
       })
     );
+    console.log("StreamDeck - getData instance:", instance);
 
     if (plugin)
-      this.currentInstance.sendEvent(
+      this.instances[0].sendEvent(
         EventsSent.GET_GLOBAL_SETTINGS,
         undefined,
         this.uuid
       );
-    else this.currentInstance.sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
+    else this.instances[0].sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
     await new Promise<void>((resolve) =>
       this.addEventListener(
         EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
@@ -707,22 +719,34 @@ abstract class StreamDeck {
       )
     );
 
-    this.currentInstance.sendEvent(EventsSent.GET_SETTINGS);
-    await new Promise<void>((resolve) => {
-      this.addEventListener(
-        EventsReceived.DID_RECEIVE_SETTINGS,
-        (event: DidReceiveEvent<{ settings: Settings }>) => {
-          this.settings = event.detail.payload.settings;
-          resolve();
+    // const items: StreamDeckItem[] = new Promise<{
+    //   instance: StreamDeckInstance;
+    //   settings: Settings;
+    // }>((resolve) => {
+    const items: StreamDeckItem[] = await Promise.all(
+      this.instances.map(
+        async (instance: StreamDeckInstance): Promise<StreamDeckItem> => {
+          instance.sendEvent(EventsSent.GET_SETTINGS);
+          return {
+            instance,
+            settings: await new Promise<Settings>((res) => {
+              this.addEventListener(
+                EventsReceived.DID_RECEIVE_SETTINGS,
+                (event: DidReceiveEvent<{ settings: Settings }>) => {
+                  res(event.detail.payload.settings);
+                }
+              );
+            }),
+          };
         }
-      );
-    });
+      )
+    );
+    // });
 
     return {
-      instance: this.currentInstance,
       globalSettings: this.globalSettings,
-      settings: this.settings,
       localization: this.localization,
+      items,
     };
   }
 

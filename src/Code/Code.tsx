@@ -17,8 +17,9 @@ import {
 import {
   DidReceiveEvent,
   EventsReceived,
+  KeyUpEvent,
+  StreamDeckPluginItem,
   StreamDeckPlugin,
-  StreamDeckPluginInstance,
 } from "../Common/StreamDeck";
 import HomeAssistant, {
   handleChange as handleHassChange,
@@ -28,10 +29,8 @@ let sdPlugin: StreamDeckPlugin;
 
 export default function Code(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
-  const [settings, setSettings] = useState<Settings>();
-  const [sdInstance, setSdInstance] = useState<StreamDeckPluginInstance>();
   const [, setLocalization] = useState<GenericObjectString>();
-  const [title, setTitle] = useState<string>("");
+  const [sdItems, setSdItems] = useState<StreamDeckPluginItem[]>();
 
   const [, setHassAuth] = useState<Auth>();
   const [, setHassConfig] = useState<HassConfig>();
@@ -46,105 +45,113 @@ export default function Code(): ReactElement {
   useEffect(() => {
     if (!sdPlugin) {
       sdPlugin = new StreamDeckPlugin();
+      console.log("Code - sdPlugin:", sdPlugin);
       sdPlugin
         .getData(true)
         .then(
           (data: {
-            instance: StreamDeckPluginInstance;
             globalSettings: GlobalSettings;
-            settings: Settings;
             localization: GenericObjectString;
+            items: StreamDeckPluginItem[];
           }) => {
             console.log("Code - getData result:", data);
-            setSdInstance(data.instance);
             setGlobalSettings(data.globalSettings);
-            setSettings(data.settings);
             setLocalization(data.localization);
+            setSdItems(data.items);
           }
         );
     }
   }, []);
 
   useEffect(() => {
-    if (
-      hassConnectionState === -2 &&
-      globalSettings &&
-      globalSettings.haConnections &&
-      settings &&
-      settings.haConnection
-    ) {
-      const connection: SettingHaConnection = globalSettings.haConnections.find(
-        (connection: SettingHaConnection) =>
-          connection.url === settings.haConnection
-      );
-      if (connection) {
-        setHassConnection(connection);
-        setHassConnectionState(-1);
-      }
+    if (globalSettings?.haConnection && hassConnectionState === -2) {
+      setHassConnection(globalSettings?.haConnection);
+      setHassConnectionState(-1);
     }
-  }, [globalSettings, settings, hassConnectionState]);
+  }, [globalSettings, hassConnectionState]);
 
   useEffect(() => {
-    if (globalSettings && settings && hassEntities) {
-      const { attributes }: HassEntity = hassEntities[settings.haEntity];
-      if (
-        attributes &&
-        attributes.friendly_name &&
-        title !== attributes.friendly_name
-      )
-        setTitle(attributes.friendly_name);
-    }
-  }, [globalSettings, settings, hassEntities, title]);
-
-  useEffect(() => {
-    if (sdInstance) {
-      sdInstance.setTitle(title);
-    }
-  }, [sdInstance, title]);
-
-  const handleKeyUp = useCallback(() => {
-    console.log("Code - onKeyUp:", {
-      globalSettings,
-      settings,
-      hassEntities,
-    });
-    if (globalSettings && settings && hassEntities) {
-      const { entity_id, state }: HassEntity = hassEntities[settings.haEntity];
-      if (entity_id) {
-        const domain: string = entity_id.split(".")[0];
+    if (globalSettings && sdItems && hassEntities) {
+      const items = sdItems;
+      items.forEach((sdItem: StreamDeckPluginItem, index: number): void => {
+        const { attributes }: HassEntity = hassEntities[
+          sdItem.settings.haEntity
+        ];
         if (
-          handleHassChange(
-            domain,
-            state === "off" || domain === "script" ? "turn_on" : "turn_off",
-            {
-              entity_id,
-            }
-          )
-        )
-          sdInstance.showOk();
-        else sdInstance.showAlert();
-      }
+          attributes &&
+          attributes.friendly_name &&
+          sdItem.title !== attributes.friendly_name
+        ) {
+          sdItem.title = attributes.friendly_name;
+          items[index] = sdItem;
+          setSdItems(items);
+          sdItem.instance.setTitle(sdItem.title);
+        }
+      });
     }
-  }, [sdInstance, globalSettings, settings, hassEntities]);
+  }, [globalSettings, sdItems, hassEntities]);
+
+  const handleKeyUp = useCallback(
+    (event: CustomEvent<KeyUpEvent>) => {
+      console.log("Code - onKeyUp:", {
+        globalSettings,
+        sdItems,
+        hassEntities,
+        event,
+      });
+      if (globalSettings && sdItems && hassEntities) {
+        const sdItem: StreamDeckPluginItem = sdItems.find(
+          (sdItem: StreamDeckPluginItem) =>
+            sdItem.instance.context === event.detail.context
+        );
+        console.log("Code - onKeyUp sdItem:", sdItem);
+        if (sdItem?.settings && sdItem?.instance) {
+          const { entity_id, state }: HassEntity = hassEntities[
+            sdItem.settings.haEntity
+          ];
+          if (entity_id) {
+            const domain: string = entity_id.split(".")[0];
+            if (
+              handleHassChange(
+                domain,
+                state === "off" || domain === "script" ? "turn_on" : "turn_off",
+                {
+                  entity_id,
+                }
+              )
+            )
+              sdItem.instance.showOk();
+            else sdItem.instance.showAlert();
+          }
+        }
+      }
+    },
+    [globalSettings, sdItems, hassEntities]
+  );
 
   useEffect(() => {
-    if (sdInstance) {
-      sdInstance.clearEventListeners(EventsReceived.KEY_UP);
-      sdInstance.on(EventsReceived.KEY_UP, handleKeyUp);
-      sdInstance.on(
-        EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
-        (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
-          setGlobalSettings(event.detail.payload.settings);
-        }
-      );
-      sdInstance.on(
-        EventsReceived.DID_RECEIVE_SETTINGS,
-        (event: DidReceiveEvent<{ settings: Settings }>) => {
-          setSettings(event.detail.payload.settings);
-        }
-      );
+    if (sdItems) {
+      const items: StreamDeckPluginItem[] = sdItems;
+      items.forEach((sdItem: StreamDeckPluginItem, index: number) => {
+        sdItem.instance.clearEventListeners(EventsReceived.KEY_UP);
+        sdItem.instance.on(EventsReceived.KEY_UP, handleKeyUp);
+        sdItem.instance.on(
+          EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
+          (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
+            setGlobalSettings(event.detail.payload.settings);
+          }
+        );
+        sdItem.instance.on(
+          EventsReceived.DID_RECEIVE_SETTINGS,
+          (event: DidReceiveEvent<{ settings: Settings }>) => {
+            sdItem.settings = event.detail.payload.settings;
+            items[index] = sdItem;
+            setSdItems(items);
+          }
+        );
+      });
     }
-  }, [sdInstance, handleKeyUp]);
+  }, [sdItems, handleKeyUp]);
 
   return (
     <>

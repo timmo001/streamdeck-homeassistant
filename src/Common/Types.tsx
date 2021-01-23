@@ -25,12 +25,12 @@ export interface Option {
 }
 
 export interface GlobalSettings {
-  haConnections?: SettingHaConnection[];
+  haConnection?: SettingHaConnection;
 }
 
 export interface Settings {
-  haConnection?: string;
   haEntity?: string;
+  icon?: string;
 }
 
 export interface SettingHaConnection {

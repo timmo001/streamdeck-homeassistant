@@ -14,7 +14,7 @@ import {
   Settings,
 } from "../Common/Types";
 import {
-  StreamDeckInstance,
+  StreamDeckItem,
   StreamDeckPropertyInspector,
 } from "../Common/StreamDeck";
 import HomeAssistant from "../HomeAssistant/HomeAssistant";
@@ -24,8 +24,8 @@ let sdPropertyInspector: StreamDeckPropertyInspector;
 
 export default function PropertyInspector(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
-  const [settings, setSettings] = useState<Settings>();
   const [localization, setLocalization] = useState<GenericObjectString>();
+  const [sdItem, setSdItem] = useState<StreamDeckItem>();
 
   const [, setHassAuth] = useState<Auth>();
   const [, setHassConfig] = useState<HassConfig>();
@@ -44,15 +44,14 @@ export default function PropertyInspector(): ReactElement {
         .getData(false)
         .then(
           (data: {
-            instance: StreamDeckInstance;
             globalSettings: GlobalSettings;
-            settings: Settings;
             localization: GenericObjectString;
+            items: StreamDeckItem[];
           }) => {
             console.log("PropertyInspector - getData result:", data);
             setGlobalSettings(data.globalSettings);
-            setSettings(data.settings);
             setLocalization(data.localization);
+            setSdItem(data.items[0]);
           }
         );
     }
@@ -60,18 +59,18 @@ export default function PropertyInspector(): ReactElement {
 
   const changeGlobalSetting = useCallback(
     (key: keyof GlobalSettings, value: any) => {
-      sdPropertyInspector.currentInstance.setGlobalSetting(key, value);
+      sdItem.instance.setGlobalSetting(key, value);
       setGlobalSettings({ ...globalSettings, [key]: value });
     },
-    [globalSettings]
+    [sdItem, globalSettings]
   );
 
   const changeSetting = useCallback(
     (key: keyof Settings, value: unknown) => {
-      sdPropertyInspector.currentInstance.setSetting(key, value);
-      setSettings({ ...settings, [key]: value });
+      sdItem.instance.setSetting(key, value);
+      setSdItem({ ...sdItem, settings: { ...sdItem.settings, [key]: value } });
     },
-    [settings]
+    [sdItem]
   );
 
   const saveConnection = useCallback(
@@ -81,13 +80,9 @@ export default function PropertyInspector(): ReactElement {
         connection,
         sdPropertyInspector,
       });
-      const connections: SettingHaConnection[] =
-        sdPropertyInspector.globalSettings?.haConnections || [];
-      connections.push(connection);
-      changeGlobalSetting("haConnections", connections);
-      changeSetting("haConnection", connection.url);
+      changeGlobalSetting("haConnection", connection);
     },
-    [changeGlobalSetting, changeSetting]
+    [changeGlobalSetting]
   );
 
   useEffect(() => {
@@ -95,31 +90,19 @@ export default function PropertyInspector(): ReactElement {
   }, [saveConnection]);
 
   useEffect(() => {
-    if (
-      hassConnectionState === -2 &&
-      globalSettings &&
-      globalSettings.haConnections &&
-      settings &&
-      settings.haConnection
-    ) {
-      const connection: SettingHaConnection = globalSettings.haConnections.find(
-        (connection: SettingHaConnection) =>
-          connection.url === settings.haConnection
-      );
-      if (connection) {
-        setHassConnection(connection);
-        setHassConnectionState(-1);
-      }
+    if (hassConnectionState === -2 && globalSettings?.haConnection) {
+      setHassConnection(globalSettings.haConnection);
+      setHassConnectionState(-1);
     }
-  }, [globalSettings, settings, hassConnectionState]);
+  }, [globalSettings, sdItem, hassConnectionState]);
 
   return (
     <>
-      {globalSettings && settings ? (
+      {globalSettings && localization && sdItem?.settings ? (
         <PropertyView
           sdPropertyInspector={sdPropertyInspector}
           globalSettings={globalSettings}
-          settings={settings}
+          settings={sdItem.settings}
           localization={localization}
           hassEntities={hassEntities}
           changeSetting={changeSetting}

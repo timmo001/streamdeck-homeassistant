@@ -9,8 +9,9 @@
   "Localization": {
     "connect": "Connect",
     "connection": "Connection",
-    "connectionAdd": "Add connection..",
-    "connectionSelect": "Select a connection..",
+    "connectionReSetup": "Reset Connection",
+    "connectionReSetupConfirm": "Clear your connection settings and reconnect?",
+    "connectionSetup": "Setup Connection",
     "entitiesSelect": "Select an Entity..",
     "entity": "Entity",
     "loadingSettings": "Loading Settings..",
