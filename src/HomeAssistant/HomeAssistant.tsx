@@ -53,8 +53,6 @@ export function handleChange(
   data?: { [key: string]: any },
   entities?: HassEntities
 ): void {
-  process.env.NODE_ENV === "development" &&
-    console.log("HomeAssistant - handleChange:", domain, state, data);
   if (domain === "group" && entities && data) {
     entities[data.entity_id].attributes.entity_id.map((entity: string) =>
       callService(
