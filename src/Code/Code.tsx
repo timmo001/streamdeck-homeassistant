@@ -16,7 +16,6 @@ import {
 } from "../Common/Types";
 import {
   EventsReceived,
-  StreamDeckInstance,
   StreamDeckPlugin,
   StreamDeckPluginInstance,
 } from "../Common/StreamDeck";

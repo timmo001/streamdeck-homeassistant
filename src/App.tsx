@@ -20,7 +20,6 @@ export default function App(): ReactElement {
         <PropertyInspector />
       ) : page === "code" ? (
         <Code />
-        // <></>
       ) : page === "setup-connection" ? (
         <SetupConnection />
       ) : (
