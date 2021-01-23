@@ -144,49 +144,7 @@ export default function PropertyView({
                   </option>
                 ))}
               </select>
-              {/* <Autocomplete
-              className="sdpi-item-value sdProperty"
-              id="ha-entity"
-              clearOnEscape
-              disableListWrap
-              disablePortal
-              openOnFocus
-              options={haEntitesOptions}
-              value={settings.haEntity || null}
-              getOptionLabel={(option: Option): string => option.label || ""}
-              getOptionSelected={(option: Option): boolean =>
-                option.value === settings.haEntity
-              }
-              // style={{ width: 300 }}
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  // label={localization?.entity}
-                  variant="standard"
-                  margin="dense"
-                />
-              )}
-              onChange={(_event: any, value: Option) =>
-                changeSetting("haEntity", value.value)
-              }
-            /> */}
             </div>
-
-            {/* <select
-          className="sdpi-item-value select"
-          name="ha-entity"
-          value={settings.haEntity}
-          onChange={(event) =>
-            event.target.value === "add"
-              ? handleAddHaConnection()
-              : changeSetting(
-                  "haEntity",
-                  event.target.value
-                )
-          }
-        >
-          <option value="">Select an entity..</option>
-        </select> */}
           </>
         ) : (
           ""
