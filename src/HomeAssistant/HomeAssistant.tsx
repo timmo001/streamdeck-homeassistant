@@ -49,58 +49,61 @@ let connection: Connection;
 
 export function handleChange(
   domain: string,
-  state: string | boolean,
+  state: string,
   data?: { [key: string]: any },
   entities?: HassEntities
 ): void {
   process.env.NODE_ENV === "development" &&
-    console.log("handleChange:", domain, state, data);
-  if (typeof state === "string") {
-    callService(connection, domain, state, data).then(
-      () => {
-        console.log("Called service");
-      },
-      (err) => {
-        console.error("Error calling service:", err);
-      }
-    );
-  } else {
-    if (domain === "group" && entities && data) {
-      entities[data.entity_id].attributes.entity_id.map((entity: string) =>
-        callService(
-          connection,
-          entity.split(".")[0],
-          state ? "turn_on" : "turn_off",
-          { entity_id: entity }
-        ).then(
-          () => {
-            console.log("Called service");
-          },
-          (err) => {
-            console.error("Error calling service:", err);
-          }
-        )
-      );
-    } else
+    console.log("HomeAssistant - handleChange:", domain, state, data);
+  if (domain === "group" && entities && data) {
+    entities[data.entity_id].attributes.entity_id.map((entity: string) =>
       callService(
         connection,
-        domain,
+        entity.split(".")[0],
         state ? "turn_on" : "turn_off",
-        data
+        { entity_id: entity }
       ).then(
         () => {
-          console.log("Called service");
+          console.log(
+            "HomeAssistant - Group called service:",
+            domain,
+            state,
+            data
+          );
         },
         (err) => {
-          console.error("Error calling service:", err);
+          console.error(
+            "HomeAssistant - Error calling group service:",
+            domain,
+            state,
+            data,
+            err
+          );
         }
-      );
-  }
+      )
+    );
+  } else
+    callService(connection, domain, state, data).then(
+      () => {
+        console.log("HomeAssistant - Called service:", domain, state, data);
+      },
+      (err) => {
+        console.error(
+          "HomeAssistant - Error calling service:",
+          domain,
+          state,
+          data,
+          err
+        );
+      }
+    );
 }
 
 function HomeAssistant(props: HomeAssistantProps): any {
   async function eventHandler(): Promise<void> {
-    console.log("Home Assistant connection has been established again.");
+    console.log(
+      "HomeAssistant - Home Assistant connection has been established again."
+    );
   }
 
   const updateConfig = useCallback(
@@ -125,7 +128,7 @@ function HomeAssistant(props: HomeAssistantProps): any {
           connection = await createConnection({ auth });
         } catch (err) {
           console.error(
-            "Connection error:",
+            "HomeAssistant - Connection error:",
             err,
             err === 1
               ? "Connection Error"
@@ -148,7 +151,10 @@ function HomeAssistant(props: HomeAssistantProps): any {
         subscribeConfig(connection, updateConfig);
         subscribeEntities(connection, updateEntites);
         getUser(connection).then((user: HassUser) => {
-          console.log("Logged into Home Assistant as", user.name);
+          console.log(
+            "HomeAssistant - Logged into Home Assistant as",
+            user.name
+          );
           props.setUser(user);
         });
         props.setConnection(0);

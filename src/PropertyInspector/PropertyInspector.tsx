@@ -20,23 +20,25 @@ export default function PropertyInspector(): ReactElement {
   const [localization, setLocalization] = useState<GenericObjectString>();
 
   useEffect(() => {
-    console.log("PropertyInspector - useEffect[]");
-    sdPropertyInspector = new StreamDeckPropertyInspector();
-    sdPropertyInspector
-      .getData()
-      .then(
-        (data: {
-          instance: StreamDeckInstance;
-          globalSettings: GlobalSettings;
-          settings: Settings;
-          localization: GenericObjectString;
-        }) => {
-          console.log("PropertyInspector - getData:", data);
-          setGlobalSettings(data.globalSettings);
-          setSettings(data.settings);
-          setLocalization(data.localization);
-        }
-      );
+    if (!sdPropertyInspector) {
+      console.log("PropertyInspector - useEffect[]");
+      sdPropertyInspector = new StreamDeckPropertyInspector();
+      sdPropertyInspector
+        .getData(false)
+        .then(
+          (data: {
+            instance: StreamDeckInstance;
+            globalSettings: GlobalSettings;
+            settings: Settings;
+            localization: GenericObjectString;
+          }) => {
+            console.log("PropertyInspector - getData:", data);
+            setGlobalSettings(data.globalSettings);
+            setSettings(data.settings);
+            setLocalization(data.localization);
+          }
+        );
+    }
   }, []);
 
   const changeGlobalSetting = useCallback(

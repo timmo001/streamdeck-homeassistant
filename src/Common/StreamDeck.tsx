@@ -684,7 +684,9 @@ abstract class StreamDeck {
     };
   }
 
-  async getData(): Promise<{
+  async getData(
+    plugin: boolean
+  ): Promise<{
     instance: StreamDeckInstance;
     globalSettings: GlobalSettings;
     settings: Settings;
@@ -692,14 +694,20 @@ abstract class StreamDeck {
   }> {
     await new Promise<void>((resolve) =>
       this.addEventListener(EventsReceived.INIT, (event: InitEvent) => {
-        console.log("StreamDeck - getData");
+        console.log("StreamDeck - getData getCurrentInstance result:", event);
         this.currentInstance = event.detail.instance;
         resolve();
       })
     );
     console.log("StreamDeck - getData currentInstance:", this.currentInstance);
 
-    this.currentInstance.sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
+    if (plugin)
+      this.currentInstance.sendEvent(
+        EventsSent.GET_GLOBAL_SETTINGS,
+        undefined,
+        this.uuid
+      );
+    else this.currentInstance.sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
     await new Promise<void>((resolve) => {
       console.log("StreamDeck - getData getGlobalSettings promise");
       this.addEventListener(
@@ -713,11 +721,22 @@ abstract class StreamDeck {
           resolve();
         }
       );
+      console.log(
+        "StreamDeck - getData getGlobalSettings promise currentInstance:",
+        this.currentInstance
+      );
     });
 
+    // if (plugin)
+    //   this.currentInstance.sendEvent(
+    //     EventsSent.GET_SETTINGS,
+    //     undefined,
+    //     this.uuid
+    //   );
+    // else
     this.currentInstance.sendEvent(EventsSent.GET_SETTINGS);
     await new Promise<void>((resolve) => {
-      console.log("StreamDeck - getData getGlobalSettings promise");
+      console.log("StreamDeck - getData getSettings promise");
       this.addEventListener(
         EventsReceived.DID_RECEIVE_SETTINGS,
         (event: DidReceiveEvent<{ settings: Settings }>) => {
@@ -937,10 +956,10 @@ abstract class StreamDeck {
    * Custom event handling
    */
   private eventListeners: {
-    [key: string]: ((...args) => any)[];
+    [key: string]: ((...args: any) => any)[];
   } = {};
 
-  on(type: EventsReceived, listener: (...args) => any) {
+  on(type: EventsReceived, listener: (...args: any) => any) {
     return this.addEventListener(type, listener);
   }
 
@@ -948,7 +967,11 @@ abstract class StreamDeck {
     return this.dispatchEvent(new CustomEvent(type, { detail: obj }));
   }
 
-  addEventListener(type: EventsReceived, listener: (...args) => any) {
+  clearEventListeners(type: EventsReceived) {
+    this.eventListeners[type] = [];
+  }
+
+  addEventListener(type: EventsReceived, listener: (...args: any) => any) {
     if (!this.eventListeners.hasOwnProperty(type)) {
       this.eventListeners[type] = [];
     }
@@ -956,11 +979,13 @@ abstract class StreamDeck {
     return true;
   }
 
-  removeEventListener(type: EventsReceived, listener: (...args) => any) {
+  removeEventListener(type: EventsReceived, listener: (...args: any) => any) {
+    console.log();
     if (!this.eventListeners.hasOwnProperty(type)) {
       return false;
     }
     const index = this.eventListeners[type].indexOf(listener);
+    console.log("removeEventListener:", type, index);
     if (index > -1) {
       this.eventListeners[type].splice(index, 1);
       return true;
@@ -1097,6 +1122,8 @@ export abstract class StreamDeckInstance extends StreamDeck {
     if (action !== undefined) {
       data.action = action;
     }
+    if (process.env.NODE_ENV === "development")
+      console.log("StreamDeck - sendEvent:", data);
     this.send(data);
   }
 }
