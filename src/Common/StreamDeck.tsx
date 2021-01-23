@@ -1126,7 +1126,7 @@ export class StreamDeckPluginInstance extends StreamDeckInstance {
     proportional?: boolean,
     target: Destination = Destination.HARDWARE_AND_SOFTWARE
   ) {
-    const canvas = await this.drawPicture(
+    const canvas: HTMLCanvasElement = await this.drawPicture(
       undefined,
       url,
       undefined,

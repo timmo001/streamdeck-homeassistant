@@ -85,7 +85,7 @@ export default function Code(): ReactElement {
   }, [globalSettings, settings, hassConnectionState]);
 
   useEffect(() => {
-    if (sdInstance && globalSettings && settings && hassEntities) {
+    if (globalSettings && settings && hassEntities) {
       const { attributes }: HassEntity = hassEntities[settings.haEntity];
       if (
         attributes &&
@@ -94,7 +94,7 @@ export default function Code(): ReactElement {
       )
         setTitle(attributes.friendly_name);
     }
-  }, [sdInstance, globalSettings, settings, hassEntities, title]);
+  }, [globalSettings, settings, hassEntities, title]);
 
   useEffect(() => {
     if (sdInstance) {
