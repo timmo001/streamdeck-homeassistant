@@ -31,12 +31,10 @@ export default function PropertyView({
     let confirmed: boolean = true;
     if (globalSettings?.haConnection)
       confirmed = window.confirm(localization?.connectionReSetupConfirm);
-    if (confirmed) {
-      changeSetting("haEntity", undefined);
+    if (confirmed)
       window.open(
         `./setup-connection.html?language=${sdPropertyInspector.language}&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${sdPropertyInspector.pluginVersion}`
       );
-    }
   }
 
   const haEntitesOptions: Option[] = useMemo(() => {
