@@ -2,11 +2,86 @@
   "Name": "Home Assistant",
   "Category": "Home Assistant",
   "Description": "Access and control your Home Assistant instance",
-  "dev.timmo.homeassistant.entity": {
-    "Name": "Entity",
-    "Tooltip": "A Home Assistant Entity"
+  "dev.timmo.homeassistant.automationTrigger": {
+    "Name": "Automation - Trigger",
+    "Tooltip": "Trigger an automation"
+  },
+  "dev.timmo.homeassistant.binarySensor": {
+    "Name": "Binary Sensor",
+    "Tooltip": "Show a binary sensor's state"
+  },
+  "dev.timmo.homeassistant.climateSet": {
+    "Name": "Climate - Set Temperature",
+    "Tooltip": "Set a climate contoller to a set temperature"
+  },
+  "dev.timmo.homeassistant.climateDecrease": {
+    "Name": "Climate - Decrease Temperature",
+    "Tooltip": "Decrease a climate contoller's temperature"
+  },
+  "dev.timmo.homeassistant.climateIncrease": {
+    "Name": "Climate - Increase Temperature",
+    "Tooltip": "Increase a climate contoller's temperature"
+  },
+  "dev.timmo.homeassistant.lightToggle": {
+    "Name": "Light - Toggle",
+    "Tooltip": "Toggle a light"
+  },
+  "dev.timmo.homeassistant.lightColor": {
+    "Name": "Light - Set Color",
+    "Tooltip": "Set a light to a color"
+  },
+  "dev.timmo.homeassistant.lightBrightnessSet": {
+    "Name": "Light - Set Brightness",
+    "Tooltip": "Set a light's brightness"
+  },
+  "dev.timmo.homeassistant.lightBrightnessDecrease": {
+    "Name": "Light - Decrease Brightness",
+    "Tooltip": "Decrease a light's brightness"
+  },
+  "dev.timmo.homeassistant.lightBrightnessIncrease": {
+    "Name": "Light - Increase Brightness",
+    "Tooltip": "Increase a light's brightness"
+  },
+  "dev.timmo.homeassistant.lightEffect": {
+    "Name": "Light - Set Effect",
+    "Tooltip": "Set a light's effect"
+  },
+  "dev.timmo.homeassistant.mediaPlayerToggle": {
+    "Name": "Media Player - Toggle Power",
+    "Tooltip": "Toggle power of a Media Player"
+  },
+  "dev.timmo.homeassistant.mediaPlayerPlayPause": {
+    "Name": "Media Player - Play/Pause",
+    "Tooltip": "Toggle playback of a Media Player"
+  },
+  "dev.timmo.homeassistant.mediaPlayerStop": {
+    "Name": "Media Player - Stop",
+    "Tooltip": "Stop a Media Player"
+  },
+  "dev.timmo.homeassistant.mediaPlayerNext": {
+    "Name": "Media Player - Next Track",
+    "Tooltip": "Go to the next track"
+  },
+  "dev.timmo.homeassistant.mediaPlayerPrevious": {
+    "Name": "Media Player - Previous Track",
+    "Tooltip": "Go to the previous track"
+  },
+  "dev.timmo.homeassistant.scriptTrigger": {
+    "Name": "Script - Trigger",
+    "Tooltip": "Trigger a script"
+  },
+  "dev.timmo.homeassistant.sensor": {
+    "Name": "Sensor",
+    "Tooltip": "Show a sensor's state"
+  },
+  "dev.timmo.homeassistant.weather": {
+    "Name": "Weather",
+    "Tooltip": "Show a Weather entity's conditions"
   },
   "Localization": {
+    "amount": "Amount",
+    "brightness": "Brightness",
+    "color": "Color",
     "connect": "Connect",
     "connection": "Connection",
     "connectionEdit": "Edit Connection",
@@ -16,6 +91,7 @@
     "loadingSettings": "Loading Settings..",
     "longLivedAccessToken": "Long-Lived Access Token",
     "url": "URL",
+    "wrapText":"Wrap Text",
     "setupConnection": {
       "description": "Connect a Home Assistant instance to access and control your home.",
       "title": "Connect to Home Assistant"
