@@ -277,9 +277,9 @@ export default function PropertyView({
               <></>
             ) : action === "dev.timmo.homeassistant.mediaplayerstop" ? (
               <></>
-            ) : action === "dev.timmo.homeassistant.mediaplayernext" ? (
-              <></>
             ) : action === "dev.timmo.homeassistant.mediaplayerprevious" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.mediaplayernext" ? (
               <></>
             ) : action === "dev.timmo.homeassistant.scripttrigger" ? (
               <></>

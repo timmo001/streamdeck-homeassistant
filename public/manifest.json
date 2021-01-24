@@ -70,7 +70,10 @@
       "Name": "Light - Toggle",
       "States": [
         {
-          "Image": "plugin/images/icons/lightToggle"
+          "Image": "plugin/images/icons/lightToggleOff"
+        },
+        {
+          "Image": "plugin/images/icons/lightToggleOn"
         }
       ],
       "Tooltip": "Toggle a light",
@@ -136,7 +139,10 @@
       "Name": "Media Player - Toggle Power",
       "States": [
         {
-          "Image": "plugin/images/icons/mediaPlayerToggle"
+          "Image": "plugin/images/icons/mediaPlayerToggleOff"
+        },
+        {
+          "Image": "plugin/images/icons/mediaPlayerToggleOn"
         }
       ],
       "Tooltip": "Toggle power of a Media Player",
@@ -147,7 +153,10 @@
       "Name": "Media Player - Play/Pause",
       "States": [
         {
-          "Image": "plugin/images/icons/mediaPlayerPlayPause"
+          "Image": "plugin/images/icons/mediaPlayerPlay"
+        },
+        {
+          "Image": "plugin/images/icons/mediaPlayerPause"
         }
       ],
       "Tooltip": "Toggle playback of a Media Player",
@@ -165,17 +174,6 @@
       "UUID": "dev.timmo.homeassistant.mediaPlayerStop"
     },
     {
-      "Icon": "plugin/images/actions/mediaPlayerNext",
-      "Name": "Media Player - Next Track",
-      "States": [
-        {
-          "Image": "plugin/images/icons/mediaPlayerNext"
-        }
-      ],
-      "Tooltip": "Go to the next track",
-      "UUID": "dev.timmo.homeassistant.mediaPlayerNext"
-    },
-    {
       "Icon": "plugin/images/actions/mediaPlayerPrevious",
       "Name": "Media Player - Previous Track",
       "States": [
@@ -185,6 +183,17 @@
       ],
       "Tooltip": "Go to the previous track",
       "UUID": "dev.timmo.homeassistant.mediaPlayerPrevious"
+    },
+    {
+      "Icon": "plugin/images/actions/mediaPlayerNext",
+      "Name": "Media Player - Next Track",
+      "States": [
+        {
+          "Image": "plugin/images/icons/mediaPlayerNext"
+        }
+      ],
+      "Tooltip": "Go to the next track",
+      "UUID": "dev.timmo.homeassistant.mediaPlayerNext"
     },
     {
       "Icon": "plugin/images/actions/scriptTrigger",
@@ -213,7 +222,10 @@
       "Name": "Switch",
       "States": [
         {
-          "Image": "plugin/images/icons/switch"
+          "Image": "plugin/images/icons/switchOff"
+        },
+        {
+          "Image": "plugin/images/icons/switchOn"
         }
       ],
       "Tooltip": "Toggle a switch",
