@@ -112,7 +112,8 @@ export default function Code(): ReactElement {
             domain === "geo_location" ||
             domain === "person" ||
             domain === "sensor" ||
-            domain === "sun"
+            domain === "sun" ||
+            domain === "weather"
           )
             // Show state
             title = `${
@@ -125,6 +126,7 @@ export default function Code(): ReactElement {
                 : ""
             }${entity.state}`;
           else if (
+            domain === "automation" ||
             domain === "climate" ||
             domain === "cover" ||
             domain === "fan" ||

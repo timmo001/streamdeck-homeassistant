@@ -42,7 +42,7 @@ export default function PropertyView({
       const options: Option[] = Object.values(hassEntities)
         .filter((entity: HassEntity) =>
           action === "dev.timmo.homeassistant.automationtrigger"
-            ? entity.entity_id.startsWith("device_tracker")
+            ? entity.entity_id.startsWith("automation")
             : action === "dev.timmo.homeassistant.binarysensor"
             ? entity.entity_id.startsWith("binary_sensor")
             : action.startsWith("dev.timmo.homeassistant.climate")
