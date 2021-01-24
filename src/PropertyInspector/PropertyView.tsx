@@ -30,8 +30,25 @@ export default function PropertyView({
   const haEntitesOptions: Option[] = useMemo(() => {
     if (hassEntities) {
       const options: Option[] = Object.values(hassEntities)
-        .filter(
-          (entity: HassEntity) => !entity.entity_id.startsWith("device_tracker")
+        .filter((entity: HassEntity) =>
+          action === "dev.timmo.homeassistant.automationtrigger"
+            ? entity.entity_id.startsWith("device_tracker")
+            : action === "dev.timmo.homeassistant.binarysensor"
+            ? entity.entity_id.startsWith("binary_sensor")
+            : action.startsWith("dev.timmo.homeassistant.climate")
+            ? entity.entity_id.startsWith("climate")
+            : action.startsWith("dev.timmo.homeassistant.light")
+            ? entity.entity_id.startsWith("light")
+            : action.startsWith("dev.timmo.homeassistant.mediaplayer")
+            ? entity.entity_id.startsWith("media_player")
+            : action === "dev.timmo.homeassistant.scripttrigger"
+            ? entity.entity_id.startsWith("script")
+            : action === "dev.timmo.homeassistant.sensor"
+            ? entity.entity_id.startsWith("sensor") ||
+              entity.entity_id.startsWith("sun")
+            : action === "dev.timmo.homeassistant.weather"
+            ? entity.entity_id.startsWith("weather")
+            : false
         )
         .sort((a: HassEntity, b: HassEntity) =>
           a.entity_id > b.entity_id ? 1 : a.entity_id < b.entity_id ? -1 : 0
