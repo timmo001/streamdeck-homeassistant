@@ -22,6 +22,10 @@
     "Name": "Climate - Increase Temperature",
     "Tooltip": "Increase a climate contoller's temperature"
   },
+  "dev.timmo.homeassistant.customService": {
+    "Name": "Custom - Service Call",
+    "Tooltip": "Call a service"
+  },
   "dev.timmo.homeassistant.lightToggle": {
     "Name": "Light - Toggle",
     "Tooltip": "Toggle a light"
@@ -58,13 +62,13 @@
     "Name": "Media Player - Stop",
     "Tooltip": "Stop a Media Player"
   },
-  "dev.timmo.homeassistant.mediaPlayerNext": {
-    "Name": "Media Player - Next Track",
-    "Tooltip": "Go to the next track"
-  },
   "dev.timmo.homeassistant.mediaPlayerPrevious": {
     "Name": "Media Player - Previous Track",
     "Tooltip": "Go to the previous track"
+  },
+  "dev.timmo.homeassistant.mediaPlayerNext": {
+    "Name": "Media Player - Next Track",
+    "Tooltip": "Go to the next track"
   },
   "dev.timmo.homeassistant.scriptTrigger": {
     "Name": "Script - Trigger",
@@ -96,7 +100,7 @@
     "loadingSettings": "Loading Settings..",
     "longLivedAccessToken": "Long-Lived Access Token",
     "url": "URL",
-    "wrapText":"Wrap Text",
+    "wrapText": "Wrap Text",
     "setupConnection": {
       "description": "Connect a Home Assistant instance to access and control your home.",
       "title": "Connect to Home Assistant"

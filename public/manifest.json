@@ -66,6 +66,17 @@
       "UUID": "dev.timmo.homeassistant.climateIncrease"
     },
     {
+      "Icon": "plugin/images/actions/customService",
+      "Name": "Custom - Service Call",
+      "States": [
+        {
+          "Image": "plugin/images/icons/customService"
+        }
+      ],
+      "Tooltip": "Call a service",
+      "UUID": "dev.timmo.homeassistant.customService"
+    },
+    {
       "Icon": "plugin/images/actions/lightToggle",
       "Name": "Light - Toggle",
       "States": [
