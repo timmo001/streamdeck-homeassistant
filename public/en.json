@@ -86,6 +86,7 @@
     "connection": "Connection",
     "connectionEdit": "Edit Connection",
     "connectionSetup": "Setup Connection",
+    "effect": "Effect",
     "entitiesSelect": "Select an Entity..",
     "entity": "Entity",
     "loadingSettings": "Loading Settings..",

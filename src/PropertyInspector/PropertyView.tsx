@@ -7,6 +7,7 @@ import {
   Option,
   Settings,
 } from "../Common/Types";
+import FeatureClassNames from "../HomeAssistant/Utils/FeatureClassNames";
 
 interface PropertyViewProps {
   action: string;
@@ -17,6 +18,14 @@ interface PropertyViewProps {
   handleChangeSetting: (key: keyof Settings, value: any) => void;
   handleSetupHaConnection: () => void;
 }
+
+const LIGHT_FEATURE_CLASS_NAMES = {
+  1: "has-brightness",
+  2: "has-color_temp",
+  4: "has-effect_list",
+  16: "has-color",
+  128: "has-white_value",
+};
 
 export default function PropertyView({
   action,
@@ -83,6 +92,25 @@ export default function PropertyView({
       ];
   }, [action, hassEntities, localization?.entitiesSelect]);
 
+  const haEffects: Option[] = useMemo(() => {
+    if (!settings?.haEntity || !hassEntities) return [];
+    const entity: HassEntity = hassEntities[settings.haEntity];
+    if (!entity) return [];
+    const attrClasses = FeatureClassNames(entity, LIGHT_FEATURE_CLASS_NAMES);
+    if (
+      !attrClasses.includes("has-effect_list") ||
+      !entity.attributes.effect_list
+    )
+      return [];
+    const effects: Option[] = entity.attributes.effect_list.map(
+      (effect: string) => ({
+        label: effect,
+        value: effect,
+      })
+    );
+    if (!settings.value) handleChangeSetting("value", effects[0].value);
+    return effects;
+  }, [settings?.haEntity, settings?.value, handleChangeSetting, hassEntities]);
   return (
     <div className="spdi-wrapper">
       <div id="sdWrapper">
@@ -193,7 +221,25 @@ export default function PropertyView({
                 </div>
               </>
             ) : action === "dev.timmo.homeassistant.lighteffect" ? (
-              <></>
+              <>
+                <div className="sdpi-item">
+                  <div className="sdpi-item-label">{localization?.effect}</div>
+                  <select
+                    className="sdpi-item-value select sdProperty sdList"
+                    id="ha-entity"
+                    value={settings.value || ""}
+                    onChange={(event) =>
+                      handleChangeSetting("value", event.target.value)
+                    }
+                  >
+                    {haEffects?.map(({ label, value }: Option) => (
+                      <option key={value} value={value}>
+                        {label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </>
             ) : action === "dev.timmo.homeassistant.mediaplayertoggle" ? (
               <></>
             ) : action === "dev.timmo.homeassistant.mediaplayerplaypause" ? (
