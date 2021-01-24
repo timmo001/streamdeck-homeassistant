@@ -51,7 +51,17 @@ export default function PropertyView({
             : false
         )
         .sort((a: HassEntity, b: HassEntity) =>
-          a.entity_id > b.entity_id ? 1 : a.entity_id < b.entity_id ? -1 : 0
+          a.attributes?.friendly_name && b.attributes?.friendly_name
+            ? a.attributes.friendly_name > b.attributes.friendly_name
+              ? 1
+              : a.attributes.friendly_name < b.attributes.friendly_name
+              ? -1
+              : 0
+            : a.entity_id > b.entity_id
+            ? 1
+            : a.entity_id < b.entity_id
+            ? -1
+            : 0
         )
         .map((entity: HassEntity) => ({
           label: entity.attributes?.friendly_name
@@ -71,7 +81,7 @@ export default function PropertyView({
           value: "",
         },
       ];
-  }, [hassEntities, localization?.entitiesSelect]);
+  }, [action, hassEntities, localization?.entitiesSelect]);
 
   return (
     <div className="spdi-wrapper">
