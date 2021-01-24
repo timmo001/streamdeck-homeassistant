@@ -117,7 +117,11 @@ export default function Code(): ReactElement {
             // Show state
             title = `${
               entity.attributes?.friendly_name
-                ? `${entity.attributes?.friendly_name}\n`
+                ? `${
+                    sdItem.settings.wrap
+                      ? entity.attributes.friendly_name?.replace(/ /g, "\n")
+                      : entity.attributes.friendly_name
+                  }\n`
                 : ""
             }${entity.state}`;
           else if (
@@ -133,7 +137,13 @@ export default function Code(): ReactElement {
             domain === "script" ||
             domain === "switch"
           )
-            title = entity.attributes?.friendly_name || "";
+            title = entity.attributes?.friendly_name
+              ? `${
+                  sdItem.settings.wrap
+                    ? entity.attributes.friendly_name?.replace(/ /g, "\n")
+                    : entity.attributes.friendly_name
+                }`
+              : "";
 
           if (sdItem.title !== title) {
             sdItem.title = title;
