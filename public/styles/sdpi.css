@@ -36,7 +36,7 @@ html {
   --sdpi-fontweight: normal;
   height: 100%;
   width: 100%;
-  overflow: hidden;
+  /* overflow: hidden; */
 }
 
 html,
@@ -654,7 +654,8 @@ details a {
   line-height: 24px;
   padding-right: 28px;
 }
-input:not([type="range"]),
+
+input:not([type="checkbox"]),
 textarea {
   -webkit-appearance: none;
   background: var(--sdpi-background);
@@ -672,7 +673,10 @@ textarea + label {
 }
 input[type="radio"],
 input[type="checkbox"] {
-  display: none;
+  /* display: none; */
+  min-height: 12px !important;
+  width: auto;
+  box-shadow: none;
 }
 input[type="radio"] + label,
 input[type="checkbox"] + label {
