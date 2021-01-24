@@ -209,6 +209,17 @@
       "UUID": "dev.timmo.homeassistant.sensor"
     },
     {
+      "Icon": "plugin/images/actions/switch",
+      "Name": "Switch",
+      "States": [
+        {
+          "Image": "plugin/images/icons/switch"
+        }
+      ],
+      "Tooltip": "Toggle a switch",
+      "UUID": "dev.timmo.homeassistant.switch"
+    },
+    {
       "Icon": "plugin/images/actions/weather",
       "Name": "Weather",
       "States": [

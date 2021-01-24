@@ -74,6 +74,10 @@
     "Name": "Sensor",
     "Tooltip": "Show a sensor's state"
   },
+  "dev.timmo.homeassistant.switch": {
+    "Name": "Switch",
+    "Tooltip": "Toggle a switch"
+  },
   "dev.timmo.homeassistant.weather": {
     "Name": "Weather",
     "Tooltip": "Show a Weather entity's conditions"

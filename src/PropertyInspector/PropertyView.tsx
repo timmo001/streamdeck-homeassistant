@@ -55,6 +55,8 @@ export default function PropertyView({
             : action === "dev.timmo.homeassistant.sensor"
             ? entity.entity_id.startsWith("sensor") ||
               entity.entity_id.startsWith("sun")
+            : action === "dev.timmo.homeassistant.switch"
+            ? entity.entity_id.startsWith("switch")
             : action === "dev.timmo.homeassistant.weather"
             ? entity.entity_id.startsWith("weather")
             : false
@@ -253,6 +255,8 @@ export default function PropertyView({
             ) : action === "dev.timmo.homeassistant.scripttrigger" ? (
               <></>
             ) : action === "dev.timmo.homeassistant.sensor" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.switch" ? (
               <></>
             ) : action === "dev.timmo.homeassistant.weather" ? (
               <></>
