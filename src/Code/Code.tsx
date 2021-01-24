@@ -101,14 +101,46 @@ export default function Code(): ReactElement {
       const items = sdItems;
       items.forEach((sdItem: StreamDeckPluginItem, index: number): void => {
         const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
-        if (
-          entity?.attributes?.friendly_name &&
-          sdItem.title !== entity?.attributes.friendly_name
-        ) {
-          sdItem.title = entity.attributes.friendly_name;
-          items[index] = sdItem;
-          setSdItems(items);
-          sdItem.instance.setTitle(sdItem.title);
+        if (entity?.entity_id) {
+          // Set title
+          const domain: string = entity.entity_id.split(".")[0];
+          let title: string = "";
+          if (
+            domain === "air_quality" ||
+            domain === "binary_sensor" ||
+            domain === "device_tracker" ||
+            domain === "geo_location" ||
+            domain === "person" ||
+            domain === "sensor" ||
+            domain === "sun"
+          )
+            // Show state
+            title = `${
+              entity.attributes?.friendly_name
+                ? `${entity.attributes?.friendly_name}\n`
+                : ""
+            }${entity.state}`;
+          else if (
+            domain === "climate" ||
+            domain === "cover" ||
+            domain === "fan" ||
+            domain === "group" ||
+            domain === "input_boolean" ||
+            domain === "light" ||
+            domain === "lock" ||
+            domain === "remote" ||
+            domain === "scene" ||
+            domain === "script" ||
+            domain === "switch"
+          )
+            title = entity.attributes?.friendly_name || "";
+
+          if (sdItem.title !== title) {
+            sdItem.title = title;
+            items[index] = sdItem;
+            setSdItems(items);
+            sdItem.instance.setTitle(sdItem.title);
+          }
         }
       });
     }
@@ -129,22 +161,40 @@ export default function Code(): ReactElement {
         );
         console.log("Code - onKeyUp sdItem:", sdItem);
         if (sdItem?.settings && sdItem?.instance) {
-          const { entity_id, state }: HassEntity = hassEntities[
-            sdItem.settings.haEntity
-          ];
-          if (entity_id) {
-            const domain: string = entity_id.split(".")[0];
-            if (
-              handleHassChange(
-                domain,
-                state === "off" || domain === "script" ? "turn_on" : "turn_off",
-                {
-                  entity_id,
-                }
-              )
-            )
-              sdItem.instance.showOk();
-            else sdItem.instance.showAlert();
+          const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
+          if (entity?.entity_id) {
+            const domain: string = entity.entity_id.split(".")[0];
+            if (entity?.state) {
+              // Has state
+              if (
+                domain === "climate" ||
+                domain === "cover" ||
+                domain === "fan" ||
+                domain === "group" ||
+                domain === "input_boolean" ||
+                domain === "light" ||
+                domain === "lock" ||
+                domain === "remote" ||
+                domain === "scene" ||
+                domain === "script" ||
+                domain === "switch"
+              ) {
+                // Can do something
+                if (
+                  handleHassChange(
+                    domain,
+                    entity.state === "off" || domain === "script"
+                      ? "turn_on"
+                      : "turn_off",
+                    {
+                      entity_id: entity.entity_id,
+                    }
+                  )
+                )
+                  sdItem.instance.showOk();
+                else sdItem.instance.showAlert();
+              }
+            }
           }
         }
       }
