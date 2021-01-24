@@ -20,6 +20,8 @@ import {
   KeyUpEvent,
   StreamDeckPluginItem,
   StreamDeckPlugin,
+  StreamDeckPluginInstance,
+  PluginInitEvent,
 } from "../Common/StreamDeck";
 import HomeAssistant, {
   handleChange as handleHassChange,
@@ -30,7 +32,7 @@ let sdPlugin: StreamDeckPlugin;
 export default function Code(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
   const [, setLocalization] = useState<GenericObjectString>();
-  const [sdItems, setSdItems] = useState<StreamDeckPluginItem[]>();
+  const [sdItems, setSdItems] = useState<StreamDeckPluginItem[]>([]);
 
   const [, setHassAuth] = useState<Auth>();
   const [, setHassConfig] = useState<HassConfig>();
@@ -42,26 +44,50 @@ export default function Code(): ReactElement {
   const [hassEntities, setHassEntities] = useState<HassEntities>();
   const [, setUser] = useState<HassUser>();
 
+  const handleGetDataResult = useCallback(
+    (data: StreamDeckPluginItem) => {
+      console.log("Code - getData result:", data);
+      const items: StreamDeckPluginItem[] = sdItems;
+      if (
+        !items.find(
+          (item: StreamDeckPluginItem) =>
+            item.instance.context === data.instance.context
+        )
+      ) {
+        console.log("Code - getData result - new item:", data.instance.context);
+        items.push(data);
+        setSdItems(items);
+      }
+    },
+    [sdItems]
+  );
+
   useEffect(() => {
     if (!sdPlugin) {
       sdPlugin = new StreamDeckPlugin();
-      console.log("Code - sdPlugin:", sdPlugin);
       sdPlugin
-        .getData(true)
+        .getGlobalData(true)
         .then(
           (data: {
             globalSettings: GlobalSettings;
             localization: GenericObjectString;
-            items: StreamDeckPluginItem[];
           }) => {
-            console.log("Code - getData result:", data);
+            console.log("Code - getGlobalData result:", data);
             setGlobalSettings(data.globalSettings);
             setLocalization(data.localization);
-            setSdItems(data.items);
           }
         );
+
+      sdPlugin.on(EventsReceived.INIT, (event: PluginInitEvent) => {
+        const instance: StreamDeckPluginInstance = event.detail.instance;
+        console.log(
+          "Code - getData instance init:",
+          event.detail.instance.context
+        );
+        sdPlugin.getData(instance).then(handleGetDataResult);
+      });
     }
-  }, []);
+  }, [handleGetDataResult]);
 
   useEffect(() => {
     if (globalSettings?.haConnection && hassConnectionState === -2) {
@@ -97,7 +123,7 @@ export default function Code(): ReactElement {
         event,
       });
       if (globalSettings && sdItems && hassEntities) {
-        const sdItem: StreamDeckPluginItem = sdItems.find(
+        const sdItem: StreamDeckPluginItem = sdItems?.find(
           (sdItem: StreamDeckPluginItem) =>
             sdItem.instance.context === event.detail.context
         );

@@ -14,6 +14,9 @@ import {
   Settings,
 } from "../Common/Types";
 import {
+  EventsReceived,
+  PluginInitEvent,
+  StreamDeckInstance,
   StreamDeckItem,
   StreamDeckPropertyInspector,
 } from "../Common/StreamDeck";
@@ -37,29 +40,38 @@ export default function PropertyInspector(): ReactElement {
   const [hassEntities, setHassEntities] = useState<HassEntities>();
   const [, setUser] = useState<HassUser>();
 
+  const handleGetDataResult = useCallback((data: StreamDeckItem) => {
+    console.log("Code - getData result:", data);
+    console.log("Code - getData result - item:", data.instance.context);
+    setSdItem(data);
+  }, []);
+
   useEffect(() => {
     if (!sdPropertyInspector) {
       sdPropertyInspector = new StreamDeckPropertyInspector();
-      console.log(
-        "PropertyInspector - sdPropertyInspector:",
-        sdPropertyInspector
-      );
       sdPropertyInspector
-        .getData(false)
+        .getGlobalData(true)
         .then(
           (data: {
             globalSettings: GlobalSettings;
             localization: GenericObjectString;
-            items: StreamDeckItem[];
           }) => {
-            console.log("PropertyInspector - getData result:", data);
+            console.log("Code - getGlobalData result:", data);
             setGlobalSettings(data.globalSettings);
             setLocalization(data.localization);
-            setSdItem(data.items[0]);
           }
         );
+
+      sdPropertyInspector.on(EventsReceived.INIT, (event: PluginInitEvent) => {
+        const instance: StreamDeckInstance = event.detail.instance;
+        console.log(
+          "Code - getData instance init:",
+          event.detail.instance.context
+        );
+        sdPropertyInspector.getData(instance).then(handleGetDataResult);
+      });
     }
-  }, []);
+  }, [handleGetDataResult]);
 
   const changeGlobalSetting = useCallback(
     (key: keyof GlobalSettings, value: any) => {

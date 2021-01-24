@@ -128,6 +128,12 @@ export interface InitEvent extends Event {
   };
 }
 
+export interface PluginInitEvent extends Event {
+  detail: {
+    instance: StreamDeckPluginInstance;
+  };
+}
+
 export interface DidReceiveEvent<T> extends Event {
   detail: {
     payload: T;
@@ -583,7 +589,7 @@ abstract class StreamDeck {
     }
   }
 
-  init(
+  async init(
     inPort?: number,
     inUUID?: string,
     inRegisterEvent?: string,
@@ -599,43 +605,48 @@ abstract class StreamDeck {
 
     this.websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
 
-    this.websocket.onopen = () => {
-      this.send({
-        event: inRegisterEvent,
-        uuid: this.uuid,
-      });
+    // Wait for websocket.onopen to complete
+    await new Promise<void>((resolve) => {
+      this.websocket.onopen = async () => {
+        this.send({
+          event: inRegisterEvent,
+          uuid: this.uuid,
+        });
 
-      if (info) {
-        this.language = info.application.language;
-        this.platform = info.application.platform;
-        this.version = info.application.version;
-        if (info.plugin) this.pluginVersion = info.plugin.version;
-        if (this.language)
-          getLocalization(this.language, (success: boolean, message: any) => {
-            if (process.env.NODE_ENV === "development")
-              console.log("StreamDeck - getLocalization result:", {
-                success,
-                message,
-              });
-            if (success) this.localization = message;
-          });
-      }
-      if (actionInfo) {
-        this.globalSettings = actionInfo.payload.globalSettings;
-        this.settings = actionInfo.payload.settings;
-        this.willAppear({
-          action: actionInfo.action,
-          context: actionInfo.context,
-          device: actionInfo.device,
-          payload: {
-            globalSettings: this.globalSettings,
-            settings: this.settings,
-          },
-        } as any);
-      }
+        if (info) {
+          this.language = info.application.language;
+          this.platform = info.application.platform;
+          this.version = info.application.version;
+          if (info.plugin) this.pluginVersion = info.plugin.version;
+          if (this.language)
+            getLocalization(this.language, (success: boolean, message: any) => {
+              if (process.env.NODE_ENV === "development")
+                console.log("StreamDeck - getLocalization result:", {
+                  success,
+                  message,
+                });
+              if (success) this.localization = message;
+            });
+        }
+        if (actionInfo) {
+          this.globalSettings = actionInfo.payload.globalSettings;
+          this.settings = actionInfo.payload.settings;
+          this.willAppear({
+            action: actionInfo.action,
+            context: actionInfo.context,
+            device: actionInfo.device,
+            payload: {
+              globalSettings: this.globalSettings,
+              settings: this.settings,
+            },
+          } as any);
+        }
 
-      console.log("StreamDeck - init:", this);
-    };
+        console.log("StreamDeck - init complete:", this);
+
+        resolve();
+      };
+    });
 
     this.websocket.onmessage = (message) => {
       const jsonObj: any = JSON.parse(message.data);
@@ -683,24 +694,21 @@ abstract class StreamDeck {
       this.emit(event, jsonObj);
     };
 
-    this.websocket.onclose = () => {
-      // Websocket is closed
-    };
+    this.websocket.onclose = () => {};
   }
 
-  async getData(
+  async getGlobalData(
     plugin: boolean
   ): Promise<{
     globalSettings: GlobalSettings;
     localization: GenericObjectString;
-    items: StreamDeckItem[];
   }> {
-    const instance = await new Promise<StreamDeckInstance>((resolve) =>
+    // Wait for an instance
+    await new Promise<StreamDeckInstance>((resolve) =>
       this.on(EventsReceived.INIT, (event: InitEvent) => {
         resolve(event.detail.instance);
       })
     );
-    console.log("StreamDeck - getData instance:", instance);
 
     if (plugin)
       this.instances[0].sendEvent(
@@ -719,29 +727,26 @@ abstract class StreamDeck {
       )
     );
 
-    const items: StreamDeckItem[] = await Promise.all(
-      this.instances.map(
-        async (instance: StreamDeckInstance): Promise<StreamDeckItem> => {
-          instance.sendEvent(EventsSent.GET_SETTINGS);
-          return {
-            instance,
-            settings: await new Promise<Settings>((res) => {
-              this.on(
-                EventsReceived.DID_RECEIVE_SETTINGS,
-                (event: DidReceiveEvent<{ settings: Settings }>) => {
-                  res(event.detail.payload.settings);
-                }
-              );
-            }),
-          };
-        }
-      )
-    );
-
     return {
       globalSettings: this.globalSettings,
       localization: this.localization,
-      items,
+    };
+  }
+
+  async getData(
+    instance: StreamDeckInstance | StreamDeckPluginInstance
+  ): Promise<StreamDeckItem | StreamDeckPluginItem> {
+    instance.sendEvent(EventsSent.GET_SETTINGS);
+    return {
+      instance,
+      settings: await new Promise<Settings>((res) => {
+        this.on(
+          EventsReceived.DID_RECEIVE_SETTINGS,
+          (event: DidReceiveEvent<{ settings: Settings }>) => {
+            res(event.detail.payload.settings);
+          }
+        );
+      }),
     };
   }
 
