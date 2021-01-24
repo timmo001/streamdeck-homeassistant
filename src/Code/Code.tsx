@@ -132,6 +132,7 @@ export default function Code(): ReactElement {
             domain === "input_boolean" ||
             domain === "light" ||
             domain === "lock" ||
+            domain === "media_player" ||
             domain === "remote" ||
             domain === "scene" ||
             domain === "script" ||
@@ -208,9 +209,7 @@ export default function Code(): ReactElement {
               if (
                 handleHassChange(
                   domain,
-                  entity.state === "off" || domain === "script"
-                    ? "turn_on"
-                    : "turn_off",
+                  entity.state === "off" ? "turn_on" : "turn_off",
                   {
                     entity_id: entity.entity_id,
                   }
@@ -281,9 +280,13 @@ export default function Code(): ReactElement {
               "dev.timmo.homeassistant.mediaplayertoggle"
             ) {
               if (
-                handleHassChange(domain, "media_play_pause", {
-                  entity_id: entity.entity_id,
-                })
+                handleHassChange(
+                  domain,
+                  entity.state === "off" ? "turn_on" : "turn_off",
+                  {
+                    entity_id: entity.entity_id,
+                  }
+                )
               )
                 sdItem.instance.showOk();
               else sdItem.instance.showAlert();
@@ -291,6 +294,13 @@ export default function Code(): ReactElement {
               sdItem?.instance?.action ===
               "dev.timmo.homeassistant.mediaplayerplaypause"
             ) {
+              if (
+                handleHassChange(domain, "media_play_pause", {
+                  entity_id: entity.entity_id,
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
             } else if (
               sdItem?.instance?.action ===
               "dev.timmo.homeassistant.mediaplayerstop"

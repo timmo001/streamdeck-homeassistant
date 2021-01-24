@@ -31,7 +31,7 @@ export interface GlobalSettings {
 export interface Settings {
   haEntity?: string;
   icon?: string;
-  value?: number;
+  value?: number | string | number[];
   wrap?: boolean;
 }
 

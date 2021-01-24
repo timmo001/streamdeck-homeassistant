@@ -8,6 +8,7 @@ import {
   Settings,
 } from "../Common/Types";
 import FeatureClassNames from "../HomeAssistant/Utils/FeatureClassNames";
+import { hexToRgb, rgbToHex } from "../Common/Utils";
 
 interface PropertyViewProps {
   action: string;
@@ -94,6 +95,20 @@ export default function PropertyView({
       ];
   }, [action, hassEntities, localization?.entitiesSelect]);
 
+  const value: string | number = useMemo(() => {
+    if (action === "dev.timmo.homeassistant.lightcolor") {
+      try {
+        if (!Array.isArray(settings.value)) return "#ffffff";
+        const values: number[] = settings.value;
+        return rgbToHex(values);
+      } catch {
+        return "#ffffff";
+      }
+    }
+    if (typeof settings.value === "number") return settings.value;
+    return String(settings.value);
+  }, [action, settings?.value]);
+
   const haEffects: Option[] = useMemo(() => {
     if (!settings?.haEntity || !hassEntities) return [];
     const entity: HassEntity = hassEntities[settings.haEntity];
@@ -110,9 +125,9 @@ export default function PropertyView({
         value: effect,
       })
     );
-    if (!settings.value) handleChangeSetting("value", effects[0].value);
+    if (!value) handleChangeSetting("value", effects[0].value);
     return effects;
-  }, [settings?.haEntity, settings?.value, handleChangeSetting, hassEntities]);
+  }, [settings?.haEntity, value, handleChangeSetting, hassEntities]);
   return (
     <div className="spdi-wrapper">
       <div id="sdWrapper">
@@ -163,7 +178,14 @@ export default function PropertyView({
               <>
                 <div className="sdpi-item">
                   <div className="sdpi-item-label">{localization?.color}</div>
-                  <input className="sdpi-item-value sdProperty" type="color" />
+                  <input
+                    className="sdpi-item-value sdProperty"
+                    type="color"
+                    value={value}
+                    onChange={(e) =>
+                      handleChangeSetting("value", hexToRgb(e.target.value))
+                    }
+                  />
                 </div>
               </>
             ) : action === "dev.timmo.homeassistant.lightbrightnessset" ? (
@@ -177,7 +199,7 @@ export default function PropertyView({
                     type="number"
                     min="0"
                     max="255"
-                    value={settings.value}
+                    value={value}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
@@ -195,7 +217,7 @@ export default function PropertyView({
                     type="number"
                     min="0"
                     max="255"
-                    value={settings.value}
+                    value={value}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
@@ -213,7 +235,7 @@ export default function PropertyView({
                     type="number"
                     min="0"
                     max="255"
-                    value={settings.value}
+                    value={value}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
@@ -229,7 +251,7 @@ export default function PropertyView({
                   <select
                     className="sdpi-item-value select sdProperty sdList"
                     id="ha-entity"
-                    value={settings.value || ""}
+                    value={value}
                     onChange={(event) =>
                       handleChangeSetting("value", event.target.value)
                     }
