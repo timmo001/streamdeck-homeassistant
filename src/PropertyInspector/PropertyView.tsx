@@ -28,13 +28,19 @@ export default function PropertyView({
 }: PropertyViewProps): ReactElement {
   function handleSetupHaConnection() {
     console.log("Setup HA connection..");
-    let confirmed: boolean = true;
-    if (globalSettings?.haConnection)
-      confirmed = window.confirm(localization?.connectionReSetupConfirm);
-    if (confirmed)
-      window.open(
-        `./setup-connection.html?language=${sdPropertyInspector.language}&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${sdPropertyInspector.pluginVersion}`
-      );
+    window.open(
+      `./setup-connection.html?language=${
+        sdPropertyInspector.language
+      }&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${
+        sdPropertyInspector.pluginVersion
+      }${
+        globalSettings?.haConnection
+          ? `&haConnectionUrl=${encodeURIComponent(
+              globalSettings?.haConnection.url
+            )}`
+          : ""
+      }`
+    );
   }
 
   const haEntitesOptions: Option[] = useMemo(() => {
@@ -73,7 +79,7 @@ export default function PropertyView({
           <div className="sdpi-item-label">{localization?.connection}</div>
           <button className="sdpi-item-value" onClick={handleSetupHaConnection}>
             {globalSettings?.haConnection
-              ? localization?.connectionReSetup
+              ? localization?.connectionEdit
               : localization?.connectionSetup}
           </button>
         </div>

@@ -34,6 +34,7 @@ export default function SetupConnection() {
 
   useEffect(() => {
     const qs = queryString.parse(window.location.search);
+    if (qs.haConnectionUrl) setUrl(qs.haConnectionUrl.toString());
     getLocalization(
       qs.language.toString(),
       (success: boolean, message: any) => {
@@ -71,16 +72,25 @@ export default function SetupConnection() {
     setHassConnectionState(-1);
   }
 
+  function handleKeyUp(e): void {
+    var key = e.which || e.keyCode;
+    if (key === 13) {
+      var event = new CustomEvent("enterPressed");
+      document.dispatchEvent(event);
+    } else if (key === 27) {
+      var event = new CustomEvent("escPressed");
+      document.dispatchEvent(event);
+    }
+  }
+
   return (
     <>
-      <div className="main">
+      <div className="main" onKeyUp={handleKeyUp}>
         <div className="center">
           <div className="border">
             <div className="status-bar">
               <div className="status-row">
-                <div id="status-intro" className="status-cell"></div>
-                <div id="status-connection" className="status-cell"></div>
-                <div id="status-save" className="status-cell"></div>
+                <div className="status-cell"></div>
               </div>
             </div>
             <div className="header">
@@ -93,7 +103,7 @@ export default function SetupConnection() {
                 alt="Home Assistant Logo"
                 src="https://brands.home-assistant.io/homeassistant/icon.png"
               />
-              <div className="sdpi-wrapper" id="pi">
+              <div className="sdpi-wrapper" id="setup">
                 <div className="sdpi-item">
                   <label className="sdpi-item-label" htmlFor="ha-access-token">
                     {localization?.url}
@@ -114,50 +124,54 @@ export default function SetupConnection() {
                     onChange={(event) => setAuthToken(event.target.value)}
                   />
                 </div>
-                <div className="sdpi-item">
-                  <button
-                    disabled={!url || !url.startsWith("http") || !authToken}
-                    onClick={(_event: any) => handleHassLogin(url, authToken)}
-                  >
-                    {localization?.connect}
-                  </button>
+                <div
+                  className={`button${
+                    !url || !url.startsWith("http") || !authToken
+                      ? " button-disabled"
+                      : ""
+                  }`}
+                  onClick={(_event: any) =>
+                    url?.startsWith("http") && authToken
+                      ? handleHassLogin(url, authToken)
+                      : null
+                  }
+                >
+                  {localization?.connect}
                 </div>
-                <div className="sdpi-item">
-                  <h4
-                    style={{
-                      color:
-                        hassConnectionState === -1
-                          ? "white"
-                          : hassConnectionState === 0
-                          ? "green"
-                          : "red",
-                    }}
-                  >
-                    {hassConnectionState === -2
-                      ? !url || !url.startsWith("http")
-                        ? "Invalid URL"
-                        : !authToken
-                        ? "Enter Long-Lived Access Token"
-                        : ""
-                      : hassConnectionState === -1
-                      ? "Connecting.."
-                      : hassConnectionState === 0
-                      ? "Connected!"
-                      : hassConnectionState === 1
-                      ? "Connection Error"
-                      : hassConnectionState === 2
-                      ? "Invalid Authentication"
-                      : hassConnectionState === 3
-                      ? "Connection Lost"
-                      : hassConnectionState === 4
-                      ? "Host Required"
-                      : hassConnectionState === 5
-                      ? "Invalid HTTPS to HTTP (HTTPS URL Required)"
-                      : hassConnectionState === 6
-                      ? "Unknown Error"
-                      : ""}
-                  </h4>
-                </div>
+                <h4
+                  style={{
+                    color:
+                      hassConnectionState === -1
+                        ? "white"
+                        : hassConnectionState === 0
+                        ? "green"
+                        : "red",
+                  }}
+                >
+                  {hassConnectionState === -2
+                    ? !url || !url.startsWith("http")
+                      ? "Invalid URL"
+                      : !authToken
+                      ? "Enter Long-Lived Access Token"
+                      : ""
+                    : hassConnectionState === -1
+                    ? "Connecting.."
+                    : hassConnectionState === 0
+                    ? "Connected!"
+                    : hassConnectionState === 1
+                    ? "Connection Error"
+                    : hassConnectionState === 2
+                    ? "Invalid Authentication"
+                    : hassConnectionState === 3
+                    ? "Connection Lost"
+                    : hassConnectionState === 4
+                    ? "Host Required"
+                    : hassConnectionState === 5
+                    ? "Invalid HTTPS to HTTP (HTTPS URL Required)"
+                    : hassConnectionState === 6
+                    ? "Unknown Error"
+                    : ""}
+                </h4>
               </div>
             </div>
           </div>
