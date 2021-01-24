@@ -7,42 +7,26 @@ import {
   Option,
   Settings,
 } from "../Common/Types";
-import { StreamDeckPropertyInspector } from "../Common/StreamDeck";
 
 interface PropertyViewProps {
-  sdPropertyInspector: StreamDeckPropertyInspector;
+  action: string;
   globalSettings: GlobalSettings;
   settings: Settings;
   localization: GenericObjectString;
   hassEntities: HassEntities;
-  changeSetting: (key: keyof Settings, value: any) => void;
+  handleChangeSetting: (key: keyof Settings, value: any) => void;
+  handleSetupHaConnection: () => void;
 }
 
 export default function PropertyView({
-  sdPropertyInspector,
+  action,
   globalSettings,
   settings,
   localization,
   hassEntities,
-  changeSetting,
+  handleChangeSetting,
+  handleSetupHaConnection,
 }: PropertyViewProps): ReactElement {
-  function handleSetupHaConnection() {
-    console.log("Setup HA connection..");
-    window.open(
-      `./setup-connection.html?language=${
-        sdPropertyInspector.language
-      }&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${
-        sdPropertyInspector.pluginVersion
-      }${
-        globalSettings?.haConnection
-          ? `&haConnectionUrl=${encodeURIComponent(
-              globalSettings?.haConnection.url
-            )}`
-          : ""
-      }`
-    );
-  }
-
   const haEntitesOptions: Option[] = useMemo(() => {
     if (hassEntities) {
       const options: Option[] = Object.values(hassEntities)
@@ -86,6 +70,7 @@ export default function PropertyView({
 
         {globalSettings?.haConnection ? (
           <>
+            <hr />
             <div className="sdpi-item">
               <div className="sdpi-item-label">{localization?.entity}</div>
               <select
@@ -95,7 +80,7 @@ export default function PropertyView({
                 onChange={(event) =>
                   event.target.value === "add"
                     ? handleSetupHaConnection()
-                    : changeSetting("haEntity", event.target.value)
+                    : handleChangeSetting("haEntity", event.target.value)
                 }
               >
                 {haEntitesOptions.map(({ label, value }: Option) => (
@@ -104,6 +89,113 @@ export default function PropertyView({
                   </option>
                 ))}
               </select>
+            </div>
+            {action === "dev.timmo.homeassistant.automationtrigger" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.binarysensor" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.climateset" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.climatedecrease" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.climateincrease" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.lighttoggle" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.lightcolor" ? (
+              <>
+                <div className="sdpi-item">
+                  <div className="sdpi-item-label">{localization?.color}</div>
+                  <input className="sdpi-item-value sdProperty" type="color" />
+                </div>
+              </>
+            ) : action === "dev.timmo.homeassistant.lightbrightnessset" ? (
+              <>
+                <div className="sdpi-item">
+                  <div className="sdpi-item-label">
+                    {localization?.brightness}
+                  </div>
+                  <input
+                    className="sdpi-item-value sdProperty"
+                    type="number"
+                    min="0"
+                    max="255"
+                    value={settings.value}
+                    onChange={(e) => {
+                      const value: number = Number(e.target.value);
+                      if (value >= 0 && value <= 255)
+                        handleChangeSetting("value", value);
+                    }}
+                  />
+                </div>
+              </>
+            ) : action === "dev.timmo.homeassistant.lightbrightnessdecrease" ? (
+              <>
+                <div className="sdpi-item">
+                  <div className="sdpi-item-label">{localization?.amount}</div>
+                  <input
+                    className="sdpi-item-value sdProperty"
+                    type="number"
+                    min="0"
+                    max="255"
+                    value={settings.value}
+                    onChange={(e) => {
+                      const value: number = Number(e.target.value);
+                      if (value >= 0 && value <= 255)
+                        handleChangeSetting("value", value);
+                    }}
+                  />
+                </div>
+              </>
+            ) : action === "dev.timmo.homeassistant.lightbrightnessincrease" ? (
+              <>
+                <div className="sdpi-item">
+                  <div className="sdpi-item-label">{localization?.amount}</div>
+                  <input
+                    className="sdpi-item-value sdProperty"
+                    type="number"
+                    min="0"
+                    max="255"
+                    value={settings.value}
+                    onChange={(e) => {
+                      const value: number = Number(e.target.value);
+                      if (value >= 0 && value <= 255)
+                        handleChangeSetting("value", value);
+                    }}
+                  />
+                </div>
+              </>
+            ) : action === "dev.timmo.homeassistant.lighteffect" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.mediaplayertoggle" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.mediaplayerplaypause" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.mediaplayerstop" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.mediaplayernext" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.mediaplayerprevious" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.scripttrigger" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.sensor" ? (
+              <></>
+            ) : action === "dev.timmo.homeassistant.weather" ? (
+              <></>
+            ) : (
+              ""
+            )}
+            <div className="sdpi-item">
+              <div className="sdpi-item-label">{localization?.wrapText}</div>
+              <input
+                className="sdpi-item-value sdProperty sdCheckbox"
+                type="checkbox"
+                checked={settings.wrap}
+                onChange={(e) => {
+                  handleChangeSetting("wrap", e.target.checked);
+                }}
+              />
             </div>
           </>
         ) : (

@@ -81,13 +81,30 @@ export default function PropertyInspector(): ReactElement {
     [sdItem, globalSettings]
   );
 
-  const changeSetting = useCallback(
+  const handleChangeSetting = useCallback(
     (key: keyof Settings, value: unknown) => {
       sdItem.instance.setSetting(key, value);
       setSdItem({ ...sdItem, settings: { ...sdItem.settings, [key]: value } });
     },
     [sdItem]
   );
+
+  function handleSetupHaConnection() {
+    console.log("Setup HA connection..");
+    window.open(
+      `./setup-connection.html?language=${
+        sdPropertyInspector.language
+      }&streamDeckVersion=${sdPropertyInspector.version}&pluginVersion=${
+        sdPropertyInspector.pluginVersion
+      }${
+        globalSettings?.haConnection
+          ? `&haConnectionUrl=${encodeURIComponent(
+              globalSettings?.haConnection.url
+            )}`
+          : ""
+      }`
+    );
+  }
 
   const saveConnection = useCallback(
     (inEvent: CustomEvent<SettingHaConnection>) => {
@@ -114,14 +131,18 @@ export default function PropertyInspector(): ReactElement {
 
   return (
     <>
-      {globalSettings && localization && sdItem?.settings ? (
+      {globalSettings &&
+      localization &&
+      sdItem?.instance?.action &&
+      sdItem?.settings ? (
         <PropertyView
-          sdPropertyInspector={sdPropertyInspector}
+          action={sdItem.instance.action}
           globalSettings={globalSettings}
           settings={sdItem.settings}
           localization={localization}
           hassEntities={hassEntities}
-          changeSetting={changeSetting}
+          handleChangeSetting={handleChangeSetting}
+          handleSetupHaConnection={handleSetupHaConnection}
         />
       ) : (
         <div className="sdpi-wrapper" id="pi">

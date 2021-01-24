@@ -1050,10 +1050,9 @@ export abstract class StreamDeckInstance extends StreamDeck {
     this.sendEvent(EventsSent.SET_GLOBAL_SETTINGS, settings, this.uuid);
   }
 
-  setSetting(key: keyof Settings, value: any) {
+  setSetting(key: keyof Settings, value: unknown) {
     if (!this.settings) this.settings = {};
-    this.settings[key] = value;
-    this.sendEvent(EventsSent.SET_SETTINGS, this.settings);
+    this.sendEvent(EventsSent.SET_SETTINGS, { ...this.settings, [key]: value });
   }
 
   setSettings(settings: Settings) {

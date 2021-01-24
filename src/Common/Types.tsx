@@ -31,6 +31,8 @@ export interface GlobalSettings {
 export interface Settings {
   haEntity?: string;
   icon?: string;
+  value?: number;
+  wrap?: boolean;
 }
 
 export interface SettingHaConnection {
