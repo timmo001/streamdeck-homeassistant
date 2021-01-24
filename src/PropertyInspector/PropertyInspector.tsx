@@ -40,6 +40,10 @@ export default function PropertyInspector(): ReactElement {
   useEffect(() => {
     if (!sdPropertyInspector) {
       sdPropertyInspector = new StreamDeckPropertyInspector();
+      console.log(
+        "PropertyInspector - sdPropertyInspector:",
+        sdPropertyInspector
+      );
       sdPropertyInspector
         .getData(false)
         .then(

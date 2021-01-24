@@ -696,7 +696,7 @@ abstract class StreamDeck {
     items: StreamDeckItem[];
   }> {
     const instance = await new Promise<StreamDeckInstance>((resolve) =>
-      this.addEventListener(EventsReceived.INIT, (event: InitEvent) => {
+      this.on(EventsReceived.INIT, (event: InitEvent) => {
         resolve(event.detail.instance);
       })
     );
@@ -710,7 +710,7 @@ abstract class StreamDeck {
       );
     else this.instances[0].sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
     await new Promise<void>((resolve) =>
-      this.addEventListener(
+      this.on(
         EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
         (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
           this.globalSettings = event.detail.payload.settings;
@@ -719,10 +719,6 @@ abstract class StreamDeck {
       )
     );
 
-    // const items: StreamDeckItem[] = new Promise<{
-    //   instance: StreamDeckInstance;
-    //   settings: Settings;
-    // }>((resolve) => {
     const items: StreamDeckItem[] = await Promise.all(
       this.instances.map(
         async (instance: StreamDeckInstance): Promise<StreamDeckItem> => {
@@ -730,7 +726,7 @@ abstract class StreamDeck {
           return {
             instance,
             settings: await new Promise<Settings>((res) => {
-              this.addEventListener(
+              this.on(
                 EventsReceived.DID_RECEIVE_SETTINGS,
                 (event: DidReceiveEvent<{ settings: Settings }>) => {
                   res(event.detail.payload.settings);
@@ -741,7 +737,6 @@ abstract class StreamDeck {
         }
       )
     );
-    // });
 
     return {
       globalSettings: this.globalSettings,

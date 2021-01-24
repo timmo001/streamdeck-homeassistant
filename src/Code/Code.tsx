@@ -74,15 +74,12 @@ export default function Code(): ReactElement {
     if (globalSettings && sdItems && hassEntities) {
       const items = sdItems;
       items.forEach((sdItem: StreamDeckPluginItem, index: number): void => {
-        const { attributes }: HassEntity = hassEntities[
-          sdItem.settings.haEntity
-        ];
+        const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
         if (
-          attributes &&
-          attributes.friendly_name &&
-          sdItem.title !== attributes.friendly_name
+          entity?.attributes?.friendly_name &&
+          sdItem.title !== entity?.attributes.friendly_name
         ) {
-          sdItem.title = attributes.friendly_name;
+          sdItem.title = entity.attributes.friendly_name;
           items[index] = sdItem;
           setSdItems(items);
           sdItem.instance.setTitle(sdItem.title);

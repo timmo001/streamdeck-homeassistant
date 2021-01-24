@@ -9,8 +9,7 @@
   "Localization": {
     "connect": "Connect",
     "connection": "Connection",
-    "connectionReSetup": "Reset Connection",
-    "connectionReSetupConfirm": "Clear your connection settings and reconnect?",
+    "connectionEdit": "Edit Connection",
     "connectionSetup": "Setup Connection",
     "entitiesSelect": "Select an Entity..",
     "entity": "Entity",
