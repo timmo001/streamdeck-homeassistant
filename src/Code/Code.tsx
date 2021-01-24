@@ -174,36 +174,156 @@ export default function Code(): ReactElement {
           const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
           if (entity?.entity_id) {
             const domain: string = entity.entity_id.split(".")[0];
+            if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.automationtrigger"
+            ) {
+              if (
+                handleHassChange(domain, "trigger", {
+                  entity_id: entity.entity_id,
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.binarysensor"
+            ) {
+            } else if (
+              sdItem?.instance?.action === "dev.timmo.homeassistant.climateset"
+            ) {
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.climatedecrease"
+            ) {
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.climateincrease"
+            ) {
+            } else if (
+              sdItem?.instance?.action ===
+                "dev.timmo.homeassistant.lighttoggle" ||
+              sdItem?.instance?.action === "dev.timmo.homeassistant.switch"
+            ) {
+              if (
+                handleHassChange(
+                  domain,
+                  entity.state === "off" || domain === "script"
+                    ? "turn_on"
+                    : "turn_off",
+                  {
+                    entity_id: entity.entity_id,
+                  }
+                )
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action === "dev.timmo.homeassistant.lightcolor"
+            ) {
+              if (
+                handleHassChange(domain, "turn_on", {
+                  entity_id: entity.entity_id,
+                  rgb_color: sdItem.settings.value,
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.lightbrightnessset"
+            ) {
+              if (
+                handleHassChange(domain, "turn_on", {
+                  entity_id: entity.entity_id,
+                  brightness: Number(sdItem.settings.value),
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.lightbrightnessdecrease"
+            ) {
+              if (
+                handleHassChange(domain, "turn_on", {
+                  entity_id: entity.entity_id,
+                  brightness_step: -Number(sdItem.settings.value),
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.lightbrightnessincrease"
+            ) {
+              if (
+                handleHassChange(domain, "turn_on", {
+                  entity_id: entity.entity_id,
+                  brightness_step: Number(sdItem.settings.value),
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action === "dev.timmo.homeassistant.lighteffect"
+            ) {
+              if (
+                handleHassChange(domain, "turn_on", {
+                  entity_id: entity.entity_id,
+                  effect: sdItem.settings.value,
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.mediaplayertoggle"
+            ) {
+              if (
+                handleHassChange(domain, "media_play_pause", {
+                  entity_id: entity.entity_id,
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.mediaplayerplaypause"
+            ) {
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.mediaplayerstop"
+            ) {
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.mediaplayernext"
+            ) {
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.mediaplayerprevious"
+            ) {
+            } else if (
+              sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.scripttrigger"
+            ) {
+              if (
+                handleHassChange(domain, "turn_on", {
+                  entity_id: entity.entity_id,
+                })
+              )
+                sdItem.instance.showOk();
+              else sdItem.instance.showAlert();
+            } else if (
+              sdItem?.instance?.action === "dev.timmo.homeassistant.sensor"
+            ) {
+            } else if (
+              sdItem?.instance?.action === "dev.timmo.homeassistant.weather"
+            ) {
+            }
+
             if (entity?.state) {
               // Has state
-              if (
-                domain === "climate" ||
-                domain === "cover" ||
-                domain === "fan" ||
-                domain === "group" ||
-                domain === "input_boolean" ||
-                domain === "light" ||
-                domain === "lock" ||
-                domain === "remote" ||
-                domain === "scene" ||
-                domain === "script" ||
-                domain === "switch"
-              ) {
-                // Can do something
-                if (
-                  handleHassChange(
-                    domain,
-                    entity.state === "off" || domain === "script"
-                      ? "turn_on"
-                      : "turn_off",
-                    {
-                      entity_id: entity.entity_id,
-                    }
-                  )
-                )
-                  sdItem.instance.showOk();
-                else sdItem.instance.showAlert();
-              }
             }
           }
         }
