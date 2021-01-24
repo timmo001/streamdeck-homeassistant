@@ -7,13 +7,13 @@ import {
   HassUser,
 } from "home-assistant-js-websocket";
 
-import { getLocalization } from "./Common/StreamDeck";
+import { getLocalization } from "../Common/StreamDeck";
 import {
   GenericObjectString,
   HassConnectionState,
   SettingHaConnection,
-} from "./Common/Types";
-import HomeAssistant from "./HomeAssistant/HomeAssistant";
+} from "../Common/Types";
+import HomeAssistant from "../HomeAssistant/HomeAssistant";
 
 export default function SetupConnection() {
   const [authToken, setAuthToken] = useState<string>("");
@@ -72,20 +72,9 @@ export default function SetupConnection() {
     setHassConnectionState(-1);
   }
 
-  function handleKeyUp(e): void {
-    var key = e.which || e.keyCode;
-    if (key === 13) {
-      var event = new CustomEvent("enterPressed");
-      document.dispatchEvent(event);
-    } else if (key === 27) {
-      var event = new CustomEvent("escPressed");
-      document.dispatchEvent(event);
-    }
-  }
-
   return (
     <>
-      <div className="main" onKeyUp={handleKeyUp}>
+      <div className="main">
         <div className="center">
           <div className="border">
             <div className="status-bar">

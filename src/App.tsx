@@ -2,7 +2,7 @@ import React, { useMemo, ReactElement } from "react";
 
 import Code from "./Code/Code";
 import PropertyInspector from "./PropertyInspector/PropertyInspector";
-import SetupConnection from "./SetupConnection";
+import SetupConnection from "./SetupConnection/SetupConnection";
 
 export default function App(): ReactElement {
   const page: string = useMemo(
