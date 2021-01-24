@@ -128,6 +128,7 @@ export default function PropertyView({
     if (!value) handleChangeSetting("value", effects[0].value);
     return effects;
   }, [settings?.haEntity, value, handleChangeSetting, hassEntities]);
+
   return (
     <div className="spdi-wrapper">
       <div id="sdWrapper">
@@ -148,6 +149,7 @@ export default function PropertyView({
               <select
                 className="sdpi-item-value select sdProperty sdList"
                 id="ha-entity"
+                required
                 value={settings.haEntity || ""}
                 onChange={(event) =>
                   event.target.value === "add"
@@ -181,6 +183,7 @@ export default function PropertyView({
                   <input
                     className="sdpi-item-value sdProperty"
                     type="color"
+                    required
                     value={value}
                     onChange={(e) =>
                       handleChangeSetting("value", hexToRgb(e.target.value))
@@ -199,6 +202,7 @@ export default function PropertyView({
                     type="number"
                     min="0"
                     max="255"
+                    required
                     value={value}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
@@ -217,6 +221,7 @@ export default function PropertyView({
                     type="number"
                     min="0"
                     max="255"
+                    required
                     value={value}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
@@ -235,6 +240,7 @@ export default function PropertyView({
                     type="number"
                     min="0"
                     max="255"
+                    required
                     value={value}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
@@ -251,6 +257,7 @@ export default function PropertyView({
                   <select
                     className="sdpi-item-value select sdProperty sdList"
                     id="ha-entity"
+                    required
                     value={value}
                     onChange={(event) =>
                       handleChangeSetting("value", event.target.value)
@@ -290,6 +297,7 @@ export default function PropertyView({
               <input
                 className="sdpi-item-value sdProperty sdCheckbox"
                 type="checkbox"
+                required
                 checked={settings.wrap}
                 onChange={(e) => {
                   handleChangeSetting("wrap", e.target.checked);
