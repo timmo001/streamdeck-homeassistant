@@ -30,8 +30,9 @@ export interface GlobalSettings {
 
 export interface Settings {
   haEntity?: string;
-  icon?: string;
-  value?: number | string | number[];
+  haValue?: string | number | number[] | GenericObjectString;
+  haValue2?: string | number | number[] | GenericObjectString;
+  haValue3?: string | number | number[] | GenericObjectString;
   wrap?: boolean;
 }
 

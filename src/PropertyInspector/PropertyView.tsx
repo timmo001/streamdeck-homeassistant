@@ -98,16 +98,16 @@ export default function PropertyView({
   const value: string | number = useMemo(() => {
     if (action === "dev.timmo.homeassistant.lightcolor") {
       try {
-        if (!Array.isArray(settings.value)) return "#ffffff";
-        const values: number[] = settings.value;
+        if (!Array.isArray(settings.haValue)) return "#ffffff";
+        const values: number[] = settings.haValue;
         return rgbToHex(values);
       } catch {
         return "#ffffff";
       }
     }
-    if (typeof settings.value === "number") return settings.value;
-    return String(settings.value);
-  }, [action, settings?.value]);
+    if (typeof settings.haValue === "number") return settings.haValue;
+    return String(settings.haValue);
+  }, [action, settings?.haValue]);
 
   const haEffects: Option[] = useMemo(() => {
     if (!settings?.haEntity || !hassEntities) return [];
@@ -125,7 +125,7 @@ export default function PropertyView({
         value: effect,
       })
     );
-    if (!value) handleChangeSetting("value", effects[0].value);
+    if (!value) handleChangeSetting("haValue", effects[0].value);
     return effects;
   }, [settings?.haEntity, value, handleChangeSetting, hassEntities]);
 
@@ -174,6 +174,8 @@ export default function PropertyView({
               <></>
             ) : action === "dev.timmo.homeassistant.climateincrease" ? (
               <></>
+            ) : action === "dev.timmo.homeassistant.customservice" ? (
+              <></>
             ) : action === "dev.timmo.homeassistant.lighttoggle" ? (
               <></>
             ) : action === "dev.timmo.homeassistant.lightcolor" ? (
@@ -186,7 +188,7 @@ export default function PropertyView({
                     required
                     value={value}
                     onChange={(e) =>
-                      handleChangeSetting("value", hexToRgb(e.target.value))
+                      handleChangeSetting("haValue", hexToRgb(e.target.value))
                     }
                   />
                 </div>
@@ -207,7 +209,7 @@ export default function PropertyView({
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
-                        handleChangeSetting("value", value);
+                        handleChangeSetting("haValue", value);
                     }}
                   />
                 </div>
@@ -226,7 +228,7 @@ export default function PropertyView({
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
-                        handleChangeSetting("value", value);
+                        handleChangeSetting("haValue", value);
                     }}
                   />
                 </div>
@@ -245,7 +247,7 @@ export default function PropertyView({
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
-                        handleChangeSetting("value", value);
+                        handleChangeSetting("haValue", value);
                     }}
                   />
                 </div>
@@ -260,7 +262,7 @@ export default function PropertyView({
                     required
                     value={value}
                     onChange={(event) =>
-                      handleChangeSetting("value", event.target.value)
+                      handleChangeSetting("haValue", event.target.value)
                     }
                   >
                     {haEffects?.map(({ label, value }: Option) => (
