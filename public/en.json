@@ -99,6 +99,7 @@
     "entity": "Entity",
     "loadingSettings": "Loading Settings..",
     "longLivedAccessToken": "Long-Lived Access Token",
+    "temperature": "Temperature",
     "url": "URL",
     "wrapText": "Wrap Text",
     "setupConnection": {

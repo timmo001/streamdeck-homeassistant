@@ -106,20 +106,24 @@ export default function PropertyView({
       }
     }
     if (typeof settings.haValue === "number") return settings.haValue;
+    if (!settings.haValue) return undefined;
     return String(settings.haValue);
   }, [action, settings?.haValue]);
 
+  const haEntity: HassEntity = useMemo(
+    () => (hassEntities ? hassEntities[settings?.haEntity] : undefined),
+    [hassEntities, settings?.haEntity]
+  );
+
   const haEffects: Option[] = useMemo(() => {
-    if (!settings?.haEntity || !hassEntities) return [];
-    const entity: HassEntity = hassEntities[settings.haEntity];
-    if (!entity) return [];
-    const attrClasses = FeatureClassNames(entity, LIGHT_FEATURE_CLASS_NAMES);
+    if (!hassEntities || !haEntity) return [];
+    const attrClasses = FeatureClassNames(haEntity, LIGHT_FEATURE_CLASS_NAMES);
     if (
       !attrClasses.includes("has-effect_list") ||
-      !entity.attributes.effect_list
+      !haEntity.attributes.effect_list
     )
       return [];
-    const effects: Option[] = entity.attributes.effect_list.map(
+    const effects: Option[] = haEntity.attributes.effect_list.map(
       (effect: string) => ({
         label: effect,
         value: effect,
@@ -127,7 +131,7 @@ export default function PropertyView({
     );
     if (!value) handleChangeSetting("haValue", effects[0].value);
     return effects;
-  }, [settings?.haEntity, value, handleChangeSetting, hassEntities]);
+  }, [hassEntities, haEntity, value, handleChangeSetting]);
 
   return (
     <div className="spdi-wrapper">
@@ -164,19 +168,76 @@ export default function PropertyView({
                 ))}
               </select>
             </div>
-            {action === "dev.timmo.homeassistant.automationtrigger" ? (
-              <></>
-            ) : action === "dev.timmo.homeassistant.binarysensor" ? (
-              <></>
-            ) : action === "dev.timmo.homeassistant.climateset" ? (
-              <></>
+            {action === "dev.timmo.homeassistant.climateset" ? (
+              <div className="sdpi-item">
+                <div className="sdpi-item-label">
+                  {localization?.temperature}
+                </div>
+                {haEntity && haEntity.attributes ? (
+                  <input
+                    className="sdpi-item-value sdProperty"
+                    type="number"
+                    min={haEntity.attributes.min_temperature || 15}
+                    max={haEntity.attributes.max_temperature || 30}
+                    required
+                    value={value || haEntity.attributes.temperature}
+                    onChange={(e) => {
+                      const value: number = Number(e.target.value);
+                      if (value >= 0 && value <= 255)
+                        handleChangeSetting("haValue", value);
+                    }}
+                  />
+                ) : (
+                  ""
+                )}
+              </div>
             ) : action === "dev.timmo.homeassistant.climatedecrease" ? (
-              <></>
+              <div className="sdpi-item">
+                <div className="sdpi-item-label">
+                  {localization?.temperature}
+                </div>
+                {haEntity && haEntity.attributes ? (
+                  <input
+                    className="sdpi-item-value sdProperty"
+                    type="number"
+                    min={0.01}
+                    max={haEntity.attributes.max_temperature || 30}
+                    required
+                    value={value || 5}
+                    onChange={(e) => {
+                      const value: number = Number(e.target.value);
+                      if (value >= 0 && value <= 255)
+                        handleChangeSetting("haValue", value);
+                    }}
+                  />
+                ) : (
+                  ""
+                )}
+              </div>
             ) : action === "dev.timmo.homeassistant.climateincrease" ? (
-              <></>
+              <div className="sdpi-item">
+                <div className="sdpi-item-label">
+                  {localization?.temperature}
+                </div>
+                {haEntity && haEntity.attributes ? (
+                  <input
+                    className="sdpi-item-value sdProperty"
+                    type="number"
+                    min={0.01}
+                    max={haEntity.attributes.max_temperature || 30}
+                    required
+                    value={value || 5}
+                    onChange={(e) => {
+                      const value: number = Number(e.target.value);
+                      if (value >= 0 && value <= 255)
+                        handleChangeSetting("haValue", value);
+                    }}
+                  />
+                ) : (
+                  ""
+                )}
+              </div>
             ) : action === "dev.timmo.homeassistant.customservice" ? (
-              <></>
-            ) : action === "dev.timmo.homeassistant.lighttoggle" ? (
               <></>
             ) : action === "dev.timmo.homeassistant.lightcolor" ? (
               <>
