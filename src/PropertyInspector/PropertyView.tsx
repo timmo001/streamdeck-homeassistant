@@ -143,7 +143,7 @@ export default function PropertyView({
       try {
         return JSON.stringify(settings.haValue2, null, 2);
       } catch (e) {
-        console.log("Error stringifying haValue2:", e.message);
+        console.warn("Error stringifying haValue2:", e.message);
       }
     return String(settings.haValue2);
   }, [settings?.haValue2]);
@@ -327,7 +327,7 @@ export default function PropertyView({
                           JSON.parse(event.target.value)
                         );
                       } catch (e) {
-                        console.log(
+                        console.warn(
                           "Error parsing haValue:",
                           e.message,
                           "setting anyway"

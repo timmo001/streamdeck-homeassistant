@@ -103,52 +103,60 @@ export default function Code(): ReactElement {
       const items = sdItems;
       items.forEach((sdItem: StreamDeckPluginItem, index: number): void => {
         let title: string = "";
-        const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
-        if (entity?.entity_id) {
-          // Set title
-          const domain: string = entity.entity_id.split(".")[0];
-          if (
-            domain === "air_quality" ||
-            domain === "binary_sensor" ||
-            domain === "device_tracker" ||
-            domain === "geo_location" ||
-            domain === "person" ||
-            domain === "sensor" ||
-            domain === "sun" ||
-            domain === "weather"
-          )
-            // Show state
-            title = `${
-              entity.attributes?.friendly_name
-                ? `${
-                    sdItem.settings.wrap
-                      ? entity.attributes.friendly_name?.replace(/ /g, "\n")
-                      : entity.attributes.friendly_name
-                  }\n`
-                : ""
-            }${entity.state}`;
-          else if (
-            domain === "automation" ||
-            domain === "climate" ||
-            domain === "cover" ||
-            domain === "fan" ||
-            domain === "group" ||
-            domain === "input_boolean" ||
-            domain === "light" ||
-            domain === "lock" ||
-            domain === "media_player" ||
-            domain === "remote" ||
-            domain === "scene" ||
-            domain === "script" ||
-            domain === "switch"
-          )
-            title = entity.attributes?.friendly_name
-              ? `${
-                  sdItem.settings.wrap
-                    ? entity.attributes.friendly_name?.replace(/ /g, "\n")
-                    : entity.attributes.friendly_name
-                }`
-              : "";
+        switch (sdItem.instance.action) {
+          case "dev.timmo.homeassistant.customservice":
+            if (typeof sdItem.settings.haValue === "string")
+              title = sdItem.settings.haValue;
+            break;
+          default:
+            const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
+            if (entity?.entity_id) {
+              // Set title
+              const domain: string = entity.entity_id.split(".")[0];
+              if (
+                domain === "air_quality" ||
+                domain === "binary_sensor" ||
+                domain === "device_tracker" ||
+                domain === "geo_location" ||
+                domain === "person" ||
+                domain === "sensor" ||
+                domain === "sun" ||
+                domain === "weather"
+              )
+                // Show state
+                title = `${
+                  entity.attributes?.friendly_name
+                    ? `${
+                        sdItem.settings.wrap
+                          ? entity.attributes.friendly_name?.replace(/ /g, "\n")
+                          : entity.attributes.friendly_name
+                      }\n`
+                    : ""
+                }${entity.state}`;
+              else if (
+                domain === "automation" ||
+                domain === "climate" ||
+                domain === "cover" ||
+                domain === "fan" ||
+                domain === "group" ||
+                domain === "input_boolean" ||
+                domain === "light" ||
+                domain === "lock" ||
+                domain === "media_player" ||
+                domain === "remote" ||
+                domain === "scene" ||
+                domain === "script" ||
+                domain === "switch"
+              )
+                title = entity.attributes?.friendly_name
+                  ? `${
+                      sdItem.settings.wrap
+                        ? entity.attributes.friendly_name?.replace(/ /g, "\n")
+                        : entity.attributes.friendly_name
+                    }`
+                  : "";
+            }
+            break;
         }
         if (sdItem.title !== title) {
           sdItem.title = title;
