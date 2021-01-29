@@ -4,12 +4,13 @@ import {
   Auth,
   HassConfig,
   HassEntities,
+  HassServices,
   HassUser,
 } from "home-assistant-js-websocket";
 
 import { getLocalization } from "../Common/StreamDeck";
 import {
-  GenericObjectString,
+  GenericObject,
   HassConnectionState,
   SettingHaConnection,
 } from "../Common/Types";
@@ -19,7 +20,7 @@ export default function SetupConnection() {
   const [authToken, setAuthToken] = useState<string>("");
   const [url, setUrl] = useState<string>("http://homeassistant.local:8123");
 
-  const [localization, setLocalization] = useState<GenericObjectString>();
+  const [localization, setLocalization] = useState<GenericObject>();
 
   const [, setHassAuth] = useState<Auth>();
   const [hassAuthToken, setHassAuthToken] = useState<string>();
@@ -28,6 +29,7 @@ export default function SetupConnection() {
     hassConnectionState,
     setHassConnectionState,
   ] = useState<HassConnectionState>(-2);
+  const [, setHassServices] = useState<HassServices>();
   const [, setHassEntities] = useState<HassEntities>();
   const [hassUser, setUser] = useState<HassUser>();
   const [hassUrl, setHassUrl] = useState<string>();
@@ -175,6 +177,7 @@ export default function SetupConnection() {
           setConfig={setHassConfig}
           setConnection={setHassConnectionState}
           setEntities={setHassEntities}
+          setServices={setHassServices}
           setUser={setUser}
         />
       ) : (

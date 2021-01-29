@@ -3,11 +3,12 @@ import {
   Auth,
   HassConfig,
   HassEntities,
+  HassServices,
   HassUser,
 } from "home-assistant-js-websocket";
 
 import {
-  GenericObjectString,
+  GenericObject,
   GlobalSettings,
   HassConnectionState,
   SettingHaConnection,
@@ -27,7 +28,7 @@ let sdPropertyInspector: StreamDeckPropertyInspector;
 
 export default function PropertyInspector(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
-  const [localization, setLocalization] = useState<GenericObjectString>();
+  const [localization, setLocalization] = useState<GenericObject>();
   const [sdItem, setSdItem] = useState<StreamDeckItem>();
 
   const [, setHassAuth] = useState<Auth>();
@@ -38,6 +39,7 @@ export default function PropertyInspector(): ReactElement {
     setHassConnectionState,
   ] = useState<HassConnectionState>(-2);
   const [hassEntities, setHassEntities] = useState<HassEntities>();
+  const [hassServices, setHassServices] = useState<HassServices>();
   const [, setUser] = useState<HassUser>();
 
   const handleGetDataResult = useCallback((data: StreamDeckItem) => {
@@ -54,7 +56,7 @@ export default function PropertyInspector(): ReactElement {
         .then(
           (data: {
             globalSettings: GlobalSettings;
-            localization: GenericObjectString;
+            localization: GenericObject;
           }) => {
             console.log("Code - getGlobalData result:", data);
             setGlobalSettings(data.globalSettings);
@@ -141,6 +143,7 @@ export default function PropertyInspector(): ReactElement {
           settings={sdItem.settings}
           localization={localization}
           hassEntities={hassEntities}
+          hassServices={hassServices}
           handleChangeSetting={handleChangeSetting}
           handleSetupHaConnection={handleSetupHaConnection}
         />
@@ -158,6 +161,7 @@ export default function PropertyInspector(): ReactElement {
           setConfig={setHassConfig}
           setConnection={setHassConnectionState}
           setEntities={setHassEntities}
+          setServices={setHassServices}
           setUser={setUser}
         />
       ) : (

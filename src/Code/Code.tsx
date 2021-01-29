@@ -4,11 +4,12 @@ import {
   HassConfig,
   HassEntities,
   HassEntity,
+  HassServices,
   HassUser,
 } from "home-assistant-js-websocket";
 
 import {
-  GenericObjectString,
+  GenericObject,
   GlobalSettings,
   HassConnectionState,
   SettingHaConnection,
@@ -31,7 +32,7 @@ let sdPlugin: StreamDeckPlugin;
 
 export default function Code(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
-  const [, setLocalization] = useState<GenericObjectString>();
+  const [, setLocalization] = useState<GenericObject>();
   const [sdItems, setSdItems] = useState<StreamDeckPluginItem[]>([]);
 
   const [, setHassAuth] = useState<Auth>();
@@ -42,6 +43,7 @@ export default function Code(): ReactElement {
     setHassConnectionState,
   ] = useState<HassConnectionState>(-2);
   const [hassEntities, setHassEntities] = useState<HassEntities>();
+  const [, setHassServices] = useState<HassServices>();
   const [, setUser] = useState<HassUser>();
 
   const handleGetDataResult = useCallback(
@@ -70,7 +72,7 @@ export default function Code(): ReactElement {
         .then(
           (data: {
             globalSettings: GlobalSettings;
-            localization: GenericObjectString;
+            localization: GenericObject;
           }) => {
             console.log("Code - getGlobalData result:", data);
             setGlobalSettings(data.globalSettings);
@@ -100,11 +102,11 @@ export default function Code(): ReactElement {
     if (globalSettings && sdItems && hassEntities) {
       const items = sdItems;
       items.forEach((sdItem: StreamDeckPluginItem, index: number): void => {
+        let title: string = "";
         const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
         if (entity?.entity_id) {
           // Set title
           const domain: string = entity.entity_id.split(".")[0];
-          let title: string = "";
           if (
             domain === "air_quality" ||
             domain === "binary_sensor" ||
@@ -147,13 +149,12 @@ export default function Code(): ReactElement {
                     : entity.attributes.friendly_name
                 }`
               : "";
-
-          if (sdItem.title !== title) {
-            sdItem.title = title;
-            items[index] = sdItem;
-            setSdItems(items);
-            sdItem.instance.setTitle(sdItem.title);
-          }
+        }
+        if (sdItem.title !== title) {
+          sdItem.title = title;
+          items[index] = sdItem;
+          setSdItems(items);
+          sdItem.instance.setTitle(sdItem.title);
         }
       });
     }
@@ -175,21 +176,26 @@ export default function Code(): ReactElement {
         console.log("Code - onKeyUp sdItem:", sdItem);
         if (sdItem?.settings && sdItem?.instance) {
           if (
-            sdItem?.instance?.action === "dev.timmo.homeassistant.customservice"
-          )
+            sdItem?.instance?.action ===
+              "dev.timmo.homeassistant.customservice" &&
+            sdItem.settings?.haValue &&
+            typeof sdItem.settings?.haValue === "string"
+          ) {
+            const service: string[] = sdItem.settings?.haValue.split(".");
+            console.log(service);
             if (
-              typeof sdItem.settings?.haValue === "string" &&
-              typeof sdItem.settings?.haValue2 === "string" &&
-              typeof sdItem.settings?.haValue3 === "object" &&
               handleHassChange(
-                sdItem.settings.haValue,
-                sdItem.settings.haValue2,
-                sdItem.settings.haValue3
+                service[0],
+                service[1],
+                sdItem.settings?.haValue2 &&
+                  typeof sdItem.settings?.haValue2 === "object"
+                  ? sdItem.settings.haValue2
+                  : {}
               )
             )
               sdItem.instance.showOk();
             else sdItem.instance.showAlert();
-          else {
+          } else {
             const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
             if (entity?.entity_id) {
               const domain: string = entity.entity_id.split(".")[0];
@@ -404,6 +410,7 @@ export default function Code(): ReactElement {
           setConfig={setHassConfig}
           setConnection={setHassConnectionState}
           setEntities={setHassEntities}
+          setServices={setHassServices}
           setUser={setUser}
         />
       ) : (

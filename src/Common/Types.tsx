@@ -15,8 +15,8 @@ export type ProgressState = -2 | -1 | 1 | 2;
 // 6 - Unknown Error
 export type HassConnectionState = -2 | -1 | 0 | 1 | 2 | 3 | 4 | 5 | 6;
 
-export interface GenericObjectString {
-  [key: string]: string;
+export interface GenericObject {
+  [key: string]: any;
 }
 
 export interface Option {
@@ -30,9 +30,8 @@ export interface GlobalSettings {
 
 export interface Settings {
   haEntity?: string;
-  haValue?: string | number | number[] | GenericObjectString;
-  haValue2?: string | number | number[] | GenericObjectString;
-  haValue3?: string | number | number[] | GenericObjectString;
+  haValue?: string | number | number[] | object;
+  haValue2?: string | number | number[] | object;
   wrap?: boolean;
 }
 

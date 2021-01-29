@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-unused-vars, @typescript-eslint/no-use-before-define */
 // Originally Sourced from https://github.com/patrickbussmann/streamdeck-sdk/blob/51c1bd168c8aa23a714c51681f68f2fd62926933/StreamDeckSDK.ts
-import { GenericObjectString, GlobalSettings, Settings } from "./Types";
+import { GenericObject, GlobalSettings, Settings } from "./Types";
 
 // @ts-ignore
 declare var global: any;
@@ -562,7 +562,7 @@ abstract class StreamDeck {
   globalSettings: GlobalSettings;
   info: any;
   language: string;
-  localization: GenericObjectString;
+  localization: GenericObject;
   platform: string;
   pluginVersion: string;
   settings: Settings;
@@ -701,7 +701,7 @@ abstract class StreamDeck {
     plugin: boolean
   ): Promise<{
     globalSettings: GlobalSettings;
-    localization: GenericObjectString;
+    localization: GenericObject;
   }> {
     // Wait for an instance
     await new Promise<StreamDeckInstance>((resolve) =>
