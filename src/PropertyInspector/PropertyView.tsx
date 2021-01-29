@@ -133,6 +133,8 @@ export default function PropertyView({
     return effects;
   }, [hassEntities, haEntity, value, handleChangeSetting]);
 
+  console.log(settings);
+
   return (
     <div className="spdi-wrapper">
       <div id="sdWrapper">
@@ -179,6 +181,7 @@ export default function PropertyView({
                     type="number"
                     min={haEntity.attributes.min_temperature || 15}
                     max={haEntity.attributes.max_temperature || 30}
+                    step={0.5}
                     required
                     value={value || haEntity.attributes.temperature}
                     onChange={(e) => {
@@ -200,10 +203,11 @@ export default function PropertyView({
                   <input
                     className="sdpi-item-value sdProperty"
                     type="number"
-                    min={0.01}
+                    min={0.5}
                     max={haEntity.attributes.max_temperature || 30}
+                    step={0.5}
                     required
-                    value={value || 5}
+                    value={value || 0.5}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
@@ -223,10 +227,11 @@ export default function PropertyView({
                   <input
                     className="sdpi-item-value sdProperty"
                     type="number"
-                    min={0.01}
+                    min={0.5}
                     max={haEntity.attributes.max_temperature || 30}
+                    step={0.5}
                     required
-                    value={value || 5}
+                    value={value || 0.5}
                     onChange={(e) => {
                       const value: number = Number(e.target.value);
                       if (value >= 0 && value <= 255)
