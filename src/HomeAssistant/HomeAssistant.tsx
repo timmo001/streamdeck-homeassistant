@@ -56,6 +56,7 @@ export async function handleChange(
   if (domain === "group" && entities && data) {
     entities[data.entity_id].attributes.entity_id.map(
       async (entity: string) => {
+        console.log("HomeAssistant - Group call service:", domain, state, data);
         await callService(
           connection,
           entity.split(".")[0],
@@ -80,6 +81,7 @@ export async function handleChange(
       }
     );
   } else {
+    console.log("HomeAssistant - Call service:", domain, state, data);
     await callService(connection, domain, state, data);
     console.log("HomeAssistant - Called service:", domain, state, data);
     // (err) => {

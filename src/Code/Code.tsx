@@ -218,7 +218,8 @@ export default function Code(): ReactElement {
                     handleHassChange(domain, "set_temperature", {
                       entity_id: entity.entity_id,
                       temperature:
-                        Number(entity.state) - Number(sdItem.settings.haValue),
+                        Number(entity.attributes.temperature) -
+                        Number(sdItem.settings.haValue),
                     })
                   )
                     sdItem.instance.showOk();
@@ -229,14 +230,15 @@ export default function Code(): ReactElement {
                     handleHassChange(domain, "set_temperature", {
                       entity_id: entity.entity_id,
                       temperature:
-                        Number(entity.state) + Number(sdItem.settings.haValue),
+                        Number(entity.attributes.temperature) +
+                        Number(sdItem.settings.haValue),
                     })
                   )
                     sdItem.instance.showOk();
                   else sdItem.instance.showAlert();
                   break;
-                case "dev.timmo.homeassistant.lighttoggle" ||
-                  sdItem?.instance?.action === "dev.timmo.homeassistant.switch":
+                case "dev.timmo.homeassistant.lighttoggle":
+                case "dev.timmo.homeassistant.switch":
                   if (
                     handleHassChange(
                       domain,
