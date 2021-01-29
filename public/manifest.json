@@ -11,15 +11,247 @@
   "Version": "1.0.0",
   "Actions": [
     {
-      "Icon": "plugin/images/actions/entity",
-      "Name": "Entity",
+      "Icon": "plugin/images/actions/automationTrigger",
+      "Name": "Automation - Trigger",
       "States": [
         {
-          "Image": "plugin/images/icons/entity"
+          "Image": "plugin/images/icons/automationTrigger"
         }
       ],
-      "Tooltip": "A Home Assistant Entity",
-      "UUID": "dev.timmo.homeassistant.entity"
+      "Tooltip": "Trigger an automation",
+      "UUID": "dev.timmo.homeassistant.automationTrigger"
+    },
+    {
+      "Icon": "plugin/images/actions/binary-sensor",
+      "Name": "Binary Sensor",
+      "States": [
+        {
+          "Image": "plugin/images/icons/binary-sensor"
+        }
+      ],
+      "Tooltip": "Show a binary sensor's state",
+      "UUID": "dev.timmo.homeassistant.binarySensor"
+    },
+    {
+      "Icon": "plugin/images/actions/climateSet",
+      "Name": "Climate - Set Temperature",
+      "States": [
+        {
+          "Image": "plugin/images/icons/climateSet"
+        }
+      ],
+      "Tooltip": "Set a climate contoller to a set temperature",
+      "UUID": "dev.timmo.homeassistant.climateSet"
+    },
+    {
+      "Icon": "plugin/images/actions/climateDecrease",
+      "Name": "Climate - Decrease Temperature",
+      "States": [
+        {
+          "Image": "plugin/images/icons/climateDecrease"
+        }
+      ],
+      "Tooltip": "Decrease a climate contoller's temperature",
+      "UUID": "dev.timmo.homeassistant.climateDecrease"
+    },
+    {
+      "Icon": "plugin/images/actions/climateIncrease",
+      "Name": "Climate - Increase Temperature",
+      "States": [
+        {
+          "Image": "plugin/images/icons/climateIncrease"
+        }
+      ],
+      "Tooltip": "Increase a climate contoller's temperature",
+      "UUID": "dev.timmo.homeassistant.climateIncrease"
+    },
+    {
+      "Icon": "plugin/images/actions/customService",
+      "Name": "Custom - Service Call",
+      "States": [
+        {
+          "Image": "plugin/images/icons/customService"
+        }
+      ],
+      "Tooltip": "Call a service",
+      "UUID": "dev.timmo.homeassistant.customService"
+    },
+    {
+      "Icon": "plugin/images/actions/lightToggle",
+      "Name": "Light - Toggle",
+      "States": [
+        {
+          "Image": "plugin/images/icons/lightToggleOff"
+        },
+        {
+          "Image": "plugin/images/icons/lightToggleOn"
+        }
+      ],
+      "Tooltip": "Toggle a light",
+      "UUID": "dev.timmo.homeassistant.lightToggle"
+    },
+    {
+      "Icon": "plugin/images/actions/lightColor",
+      "Name": "Light - Set Color",
+      "States": [
+        {
+          "Image": "plugin/images/icons/lightColor"
+        }
+      ],
+      "Tooltip": "Set a light to a color",
+      "UUID": "dev.timmo.homeassistant.lightColor"
+    },
+    {
+      "Icon": "plugin/images/actions/lightBrightnessSet",
+      "Name": "Light - Set Brightness",
+      "States": [
+        {
+          "Image": "plugin/images/icons/lightBrightnessSet"
+        }
+      ],
+      "Tooltip": "Set a light's brightness",
+      "UUID": "dev.timmo.homeassistant.lightBrightnessSet"
+    },
+    {
+      "Icon": "plugin/images/actions/lightBrightnessDecrease",
+      "Name": "Light - Decrease Brightness",
+      "States": [
+        {
+          "Image": "plugin/images/icons/lightBrightnessDecrease"
+        }
+      ],
+      "Tooltip": "Decrease a light's brightness",
+      "UUID": "dev.timmo.homeassistant.lightBrightnessDecrease"
+    },
+    {
+      "Icon": "plugin/images/actions/lightBrightnessIncrease",
+      "Name": "Light - Increase Brightness",
+      "States": [
+        {
+          "Image": "plugin/images/icons/lightBrightnessIncrease"
+        }
+      ],
+      "Tooltip": "Increase a light's brightness",
+      "UUID": "dev.timmo.homeassistant.lightBrightnessIncrease"
+    },
+    {
+      "Icon": "plugin/images/actions/lightEffect",
+      "Name": "Light - Set Effect",
+      "States": [
+        {
+          "Image": "plugin/images/icons/lightEffect"
+        }
+      ],
+      "Tooltip": "Set a light's effect",
+      "UUID": "dev.timmo.homeassistant.lightEffect"
+    },
+    {
+      "Icon": "plugin/images/actions/mediaPlayerToggle",
+      "Name": "Media Player - Toggle Power",
+      "States": [
+        {
+          "Image": "plugin/images/icons/mediaPlayerToggleOff"
+        },
+        {
+          "Image": "plugin/images/icons/mediaPlayerToggleOn"
+        }
+      ],
+      "Tooltip": "Toggle power of a Media Player",
+      "UUID": "dev.timmo.homeassistant.mediaPlayerToggle"
+    },
+    {
+      "Icon": "plugin/images/actions/mediaPlayerPlayPause",
+      "Name": "Media Player - Play/Pause",
+      "States": [
+        {
+          "Image": "plugin/images/icons/mediaPlayerPlay"
+        },
+        {
+          "Image": "plugin/images/icons/mediaPlayerPause"
+        }
+      ],
+      "Tooltip": "Toggle playback of a Media Player",
+      "UUID": "dev.timmo.homeassistant.mediaPlayerPlayPause"
+    },
+    {
+      "Icon": "plugin/images/actions/mediaPlayerStop",
+      "Name": "Media Player - Stop",
+      "States": [
+        {
+          "Image": "plugin/images/icons/mediaPlayerStop"
+        }
+      ],
+      "Tooltip": "Stop a Media Player",
+      "UUID": "dev.timmo.homeassistant.mediaPlayerStop"
+    },
+    {
+      "Icon": "plugin/images/actions/mediaPlayerPrevious",
+      "Name": "Media Player - Previous Track",
+      "States": [
+        {
+          "Image": "plugin/images/icons/mediaPlayerPrevious"
+        }
+      ],
+      "Tooltip": "Go to the previous track",
+      "UUID": "dev.timmo.homeassistant.mediaPlayerPrevious"
+    },
+    {
+      "Icon": "plugin/images/actions/mediaPlayerNext",
+      "Name": "Media Player - Next Track",
+      "States": [
+        {
+          "Image": "plugin/images/icons/mediaPlayerNext"
+        }
+      ],
+      "Tooltip": "Go to the next track",
+      "UUID": "dev.timmo.homeassistant.mediaPlayerNext"
+    },
+    {
+      "Icon": "plugin/images/actions/scriptTrigger",
+      "Name": "Script - Trigger",
+      "States": [
+        {
+          "Image": "plugin/images/icons/scriptTrigger"
+        }
+      ],
+      "Tooltip": "Trigger a script",
+      "UUID": "dev.timmo.homeassistant.scriptTrigger"
+    },
+    {
+      "Icon": "plugin/images/actions/sensor",
+      "Name": "Sensor",
+      "States": [
+        {
+          "Image": "plugin/images/icons/sensor"
+        }
+      ],
+      "Tooltip": "Show a sensor's state",
+      "UUID": "dev.timmo.homeassistant.sensor"
+    },
+    {
+      "Icon": "plugin/images/actions/switch",
+      "Name": "Switch",
+      "States": [
+        {
+          "Image": "plugin/images/icons/switchOff"
+        },
+        {
+          "Image": "plugin/images/icons/switchOn"
+        }
+      ],
+      "Tooltip": "Toggle a switch",
+      "UUID": "dev.timmo.homeassistant.switch"
+    },
+    {
+      "Icon": "plugin/images/actions/weather",
+      "Name": "Weather",
+      "States": [
+        {
+          "Image": "plugin/images/icons/weather"
+        }
+      ],
+      "Tooltip": "Show a Weather entity's conditions",
+      "UUID": "dev.timmo.homeassistant.weather"
     }
   ],
   "CodePath": "code.html",
