@@ -20,10 +20,11 @@ import {
   DidReceiveEvent,
   EventsReceived,
   KeyUpEvent,
-  StreamDeckPluginItem,
   StreamDeckPlugin,
   StreamDeckPluginInstance,
   PluginInitEvent,
+  StreamDeckItems,
+  StreamDeckPluginItem,
 } from "../Common/StreamDeck";
 import HomeAssistant, {
   handleChange as handleHassChange,
@@ -34,7 +35,7 @@ let sdPlugin: StreamDeckPlugin;
 export default function Code(): ReactElement {
   const [globalSettings, setGlobalSettings] = useState<GlobalSettings>();
   const [, setLocalization] = useState<GenericObject>();
-  const [sdItems, setSdItems] = useState<StreamDeckPluginItem[]>([]);
+  const [sdItems, setSdItems] = useState<StreamDeckItems>({});
 
   const [, setHassAuth] = useState<Auth>();
   const [, setHassConfig] = useState<HassConfig>();
@@ -47,20 +48,12 @@ export default function Code(): ReactElement {
   const [, setHassServices] = useState<HassServices>();
   const [, setUser] = useState<HassUser>();
 
-  useEffect(() => {
-    if (globalSettings?.haConnection && hassConnectionState === -2) {
-      setHassConnection(globalSettings?.haConnection);
-      setHassConnectionState(-1);
-    }
-  }, [globalSettings, hassConnectionState]);
-
   const handleUpdateTitle = useCallback(
-    (sdItem: StreamDeckPluginItem, index: number) => {
+    (sdItem: StreamDeckPluginItem) => {
       if (globalSettings && hassEntities) {
-        const items = cloneDeep(sdItems);
         let title: string = "";
         let entity: HassEntity;
-        switch (sdItem.instance.action) {
+        switch (sdItem.action) {
           case "dev.timmo.homeassistant.customservice":
             if (typeof sdItem.settings.haValue === "string")
               title = sdItem.settings.haValue;
@@ -117,66 +110,13 @@ export default function Code(): ReactElement {
         }
         if (sdItem.title !== title) {
           sdItem.title = title;
-          items[index] = sdItem;
-          setSdItems(items);
-          sdItem.instance.setTitle(title);
+          setSdItems({ ...sdItems, [sdItem.context]: sdItem });
+          sdItem.setTitle(title);
         }
       }
     },
     [globalSettings, sdItems, hassEntities]
   );
-
-  const handleGetDataResult = useCallback(
-    (sdItem: StreamDeckPluginItem) => {
-      console.log("Code - getData result:", sdItem);
-      const items: StreamDeckPluginItem[] = sdItems;
-      if (
-        !items.find(
-          (item: StreamDeckPluginItem) =>
-            item.instance.context === sdItem.instance.context
-        )
-      ) {
-        console.log(
-          "Code - getData result - new item:",
-          sdItem.instance.context
-        );
-        items.push(sdItem);
-        setSdItems(items);
-      }
-    },
-    [sdItems]
-  );
-
-  useEffect(() => {
-    if (!sdPlugin) {
-      sdPlugin = new StreamDeckPlugin();
-      sdPlugin
-        .getGlobalData(true)
-        .then(
-          (data: {
-            globalSettings: GlobalSettings;
-            localization: GenericObject;
-          }) => {
-            console.log("Code - getGlobalData result:", data);
-            setGlobalSettings(data.globalSettings);
-            setLocalization(data.localization);
-          }
-        );
-
-      sdPlugin.on(EventsReceived.INIT, (event: PluginInitEvent) => {
-        const instance: StreamDeckPluginInstance = event.detail.instance;
-        console.log(
-          "Code - getData instance init:",
-          event.detail.instance.context
-        );
-        sdPlugin.getData(instance).then(handleGetDataResult);
-      });
-    }
-  }, [handleGetDataResult]);
-
-  useEffect(() => {
-    if (sdItems && hassEntities) cloneDeep(sdItems).forEach(handleUpdateTitle);
-  }, [sdItems, hassEntities, handleUpdateTitle]);
 
   const handleKeyUp = useCallback(
     (event: CustomEvent<KeyUpEvent>) => {
@@ -187,15 +127,11 @@ export default function Code(): ReactElement {
         event,
       });
       if (globalSettings && sdItems && hassEntities) {
-        const sdItem: StreamDeckPluginItem = sdItems?.find(
-          (sdItem: StreamDeckPluginItem) =>
-            sdItem.instance.context === event.detail.context
-        );
+        const sdItem: StreamDeckPluginItem = sdItems[event.detail.context];
         console.log("Code - onKeyUp sdItem:", sdItem);
-        if (sdItem?.settings && sdItem?.instance) {
+        if (sdItem?.settings) {
           if (
-            sdItem?.instance?.action ===
-              "dev.timmo.homeassistant.customservice" &&
+            sdItem?.action === "dev.timmo.homeassistant.customservice" &&
             sdItem.settings?.haValue &&
             typeof sdItem.settings?.haValue === "string"
           ) {
@@ -211,21 +147,21 @@ export default function Code(): ReactElement {
                   : {}
               )
             )
-              sdItem.instance.showOk();
-            else sdItem.instance.showAlert();
+              sdItem.showOk();
+            else sdItem.showAlert();
           } else {
             const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
             if (entity?.entity_id) {
               const domain: string = entity.entity_id.split(".")[0];
-              switch (sdItem?.instance?.action) {
+              switch (sdItem?.action) {
                 case "dev.timmo.homeassistant.automationtrigger":
                   if (
                     handleHassChange(domain, "trigger", {
                       entity_id: entity.entity_id,
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.climateset":
                   if (
@@ -234,8 +170,8 @@ export default function Code(): ReactElement {
                       temperature: Number(sdItem.settings.haValue),
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.climatedecrease":
                   if (
@@ -246,8 +182,8 @@ export default function Code(): ReactElement {
                         Number(sdItem.settings.haValue),
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.climateincrease":
                   if (
@@ -258,8 +194,8 @@ export default function Code(): ReactElement {
                         Number(sdItem.settings.haValue),
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.lighttoggle":
                 case "dev.timmo.homeassistant.switch":
@@ -272,8 +208,8 @@ export default function Code(): ReactElement {
                       }
                     )
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.lightcolor":
                   if (
@@ -282,8 +218,8 @@ export default function Code(): ReactElement {
                       rgb_color: sdItem.settings.haValue,
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.lightbrightnessset":
                   if (
@@ -292,8 +228,8 @@ export default function Code(): ReactElement {
                       brightness: Number(sdItem.settings.haValue),
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.lightbrightnessdecrease":
                   if (
@@ -302,8 +238,8 @@ export default function Code(): ReactElement {
                       brightness_step: -Number(sdItem.settings.haValue),
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.lightbrightnessincrease":
                   if (
@@ -312,8 +248,8 @@ export default function Code(): ReactElement {
                       brightness_step: Number(sdItem.settings.haValue),
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.lighteffect":
                   if (
@@ -322,8 +258,8 @@ export default function Code(): ReactElement {
                       effect: sdItem.settings.haValue,
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.mediaplayertoggle":
                   if (
@@ -335,8 +271,8 @@ export default function Code(): ReactElement {
                       }
                     )
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.mediaplayerplaypause":
                   if (
@@ -344,8 +280,8 @@ export default function Code(): ReactElement {
                       entity_id: entity.entity_id,
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.mediaplayerstop":
                   if (
@@ -353,7 +289,7 @@ export default function Code(): ReactElement {
                       entity_id: entity.entity_id,
                     })
                   )
-                    sdItem.instance.showOk();
+                    sdItem.showOk();
                   break;
                 case "dev.timmo.homeassistant.mediaplayerprevious":
                   if (
@@ -361,8 +297,8 @@ export default function Code(): ReactElement {
                       entity_id: entity.entity_id,
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.mediaplayernext":
                   if (
@@ -370,8 +306,8 @@ export default function Code(): ReactElement {
                       entity_id: entity.entity_id,
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 case "dev.timmo.homeassistant.scripttrigger":
                   if (
@@ -379,8 +315,8 @@ export default function Code(): ReactElement {
                       entity_id: entity.entity_id,
                     })
                   )
-                    sdItem.instance.showOk();
-                  else sdItem.instance.showAlert();
+                    sdItem.showOk();
+                  else sdItem.showAlert();
                   break;
                 default:
                   break;
@@ -393,29 +329,72 @@ export default function Code(): ReactElement {
     [globalSettings, sdItems, hassEntities]
   );
 
-  useEffect(() => {
-    if (sdItems) {
-      const items: StreamDeckPluginItem[] = sdItems;
-      items.forEach((sdItem: StreamDeckPluginItem, index: number) => {
-        sdItem.instance.clearEventListeners(EventsReceived.KEY_UP);
-        sdItem.instance.on(EventsReceived.KEY_UP, handleKeyUp);
-        sdItem.instance.on(
+  const handleGetDataResult = useCallback(
+    (sdItem: StreamDeckPluginItem) => {
+      console.log("Code - getData result:", sdItem, cloneDeep(sdItems));
+      if (!sdItems[sdItem.context]) {
+        console.log("Code - getData result - new item:", sdItem.context);
+
+        sdItem.clearEventListeners(EventsReceived.KEY_UP);
+        sdItem.on(EventsReceived.KEY_UP, handleKeyUp);
+        sdItem.on(
           EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
           (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
             setGlobalSettings(event.detail.payload.settings);
           }
         );
-        sdItem.instance.on(
+        sdItem.on(
           EventsReceived.DID_RECEIVE_SETTINGS,
           (event: DidReceiveEvent<{ settings: Settings }>) => {
             sdItem.settings = event.detail.payload.settings;
-            items[index] = sdItem;
-            setSdItems(items);
+            setSdItems({ ...sdItems, [sdItem.context]: sdItem });
           }
         );
-      });
+
+        setSdItems({ ...sdItems, [sdItem.context]: sdItem });
+      }
+    },
+    [sdItems, handleKeyUp]
+  );
+
+  useEffect(() => {
+    if (globalSettings?.haConnection && hassConnectionState === -2) {
+      setHassConnection(globalSettings?.haConnection);
+      setHassConnectionState(-1);
     }
-  }, [sdItems, handleKeyUp]);
+  }, [globalSettings, hassConnectionState]);
+
+  useEffect(() => {
+    if (!sdPlugin) {
+      sdPlugin = new StreamDeckPlugin();
+      sdPlugin
+        .getGlobalData()
+        .then(
+          (data: {
+            globalSettings: GlobalSettings;
+            localization: GenericObject;
+          }) => {
+            console.log("Code - getGlobalData result:", data);
+            setGlobalSettings(data.globalSettings);
+            setLocalization(data.localization);
+
+            sdPlugin.on(EventsReceived.INIT, (event: PluginInitEvent) => {
+              const instance: StreamDeckPluginInstance = event.detail.instance;
+              console.log(
+                "Code - getData instance init:",
+                event.detail.instance.context
+              );
+              sdPlugin.getPluginData(instance).then(handleGetDataResult);
+            });
+          }
+        );
+    }
+  }, [handleGetDataResult]);
+
+  useEffect(() => {
+    if (sdItems && hassEntities)
+      Object.values(cloneDeep(sdItems)).forEach(handleUpdateTitle);
+  }, [sdItems, hassEntities, handleUpdateTitle]);
 
   return (
     <>

@@ -446,18 +446,27 @@ interface SendToPluginEvent extends Event {
   payload: any;
 }
 
-interface SendToPropertyInspectorEvent extends SendToPluginEvent {}
+export interface SendToPropertyInspectorEvent extends SendToPluginEvent {}
 
 export interface StreamDeckItem {
-  instance: StreamDeckInstance;
+  action: string;
+  clearEventListeners: (type: EventsReceived) => void;
+  context: string;
+  on: (type: EventsReceived, listener: (...args: any[]) => void) => void;
+  setGlobalSetting: (key: keyof GlobalSettings, value: any) => void;
+  setSetting: (key: keyof Settings, value: any) => void;
   settings: Settings;
   title?: string;
 }
 
-export interface StreamDeckPluginItem {
-  instance: StreamDeckPluginInstance;
-  settings: Settings;
-  title?: string;
+export interface StreamDeckPluginItem extends StreamDeckItem {
+  setTitle: (title: string) => void;
+  showAlert: () => void;
+  showOk: () => void;
+}
+
+export interface StreamDeckItems {
+  [context: string]: StreamDeckPluginItem;
 }
 
 enum DeviceType {
@@ -556,7 +565,7 @@ export function getLocalization(
 }
 
 abstract class StreamDeck {
-  private instances: StreamDeckInstance[] = [];
+  private instances: StreamDeckInstances = {};
   static initialized = false;
   actionInfo: any;
   globalSettings: GlobalSettings;
@@ -602,6 +611,7 @@ abstract class StreamDeck {
       : inActionInfo;
 
     this.uuid = inUUID;
+    console.log({ inUUID });
 
     this.websocket = new WebSocket(`ws://127.0.0.1:${inPort}`);
 
@@ -669,7 +679,7 @@ abstract class StreamDeck {
         jsonObj.hasOwnProperty("context") ||
         jsonObj.hasOwnProperty("device")
       ) {
-        this.instances.forEach((i) => {
+        Object.values(this.instances).forEach((i) => {
           if (jsonObj.hasOwnProperty("action") && i.action !== jsonObj.action) {
             return;
           }
@@ -697,48 +707,91 @@ abstract class StreamDeck {
     this.websocket.onclose = () => {};
   }
 
-  async getGlobalData(
-    plugin: boolean
-  ): Promise<{
+  async getGlobalData(): Promise<{
     globalSettings: GlobalSettings;
     localization: GenericObject;
   }> {
     // Wait for an instance
-    await new Promise<StreamDeckInstance>((resolve) =>
+    const instance = await new Promise<StreamDeckInstance>((resolve) =>
       this.on(EventsReceived.INIT, (event: InitEvent) => {
         resolve(event.detail.instance);
       })
     );
 
-    if (plugin)
-      this.instances[0].sendEvent(
-        EventsSent.GET_GLOBAL_SETTINGS,
-        undefined,
-        this.uuid
-      );
-    else this.instances[0].sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
-    await new Promise<void>((resolve) =>
-      this.on(
-        EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
-        (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
-          this.globalSettings = event.detail.payload.settings;
-          resolve();
-        }
-      )
-    );
+    console.log({ instance });
+    // if (plugin)
+    instance.sendEvent(EventsSent.GET_GLOBAL_SETTINGS, instance.uuid);
+    // else instance.sendEvent(EventsSent.GET_GLOBAL_SETTINGS);
 
     return {
-      globalSettings: this.globalSettings,
+      globalSettings: await new Promise<GlobalSettings>((resolve) =>
+        this.on(
+          EventsReceived.DID_RECEIVE_GLOBAL_SETTINGS,
+          (event: DidReceiveEvent<{ settings: GlobalSettings }>) => {
+            this.globalSettings = event.detail.payload.settings;
+            resolve(event.detail.payload.settings);
+          }
+        )
+      ),
       localization: this.localization,
     };
   }
 
-  async getData(
-    instance: StreamDeckInstance | StreamDeckPluginInstance
-  ): Promise<StreamDeckItem | StreamDeckPluginItem> {
-    instance.sendEvent(EventsSent.GET_SETTINGS);
+  async getPIData(instance: StreamDeckInstance): Promise<StreamDeckItem> {
+    const {
+      action,
+      clearEventListeners,
+      context,
+      on,
+      sendEvent,
+      setGlobalSetting,
+      setSetting,
+    } = instance;
+    sendEvent(EventsSent.GET_SETTINGS, context);
     return {
-      instance,
+      action,
+      clearEventListeners,
+      context,
+      on,
+      setGlobalSetting,
+      setSetting,
+      settings: await new Promise<Settings>((res) => {
+        this.on(
+          EventsReceived.DID_RECEIVE_SETTINGS,
+          (event: DidReceiveEvent<{ settings: Settings }>) => {
+            res(event.detail.payload.settings);
+          }
+        );
+      }),
+    };
+  }
+
+  async getPluginData(
+    instance: StreamDeckPluginInstance
+  ): Promise<StreamDeckPluginItem> {
+    const {
+      action,
+      clearEventListeners,
+      context,
+      on,
+      sendEvent,
+      setGlobalSetting,
+      setSetting,
+      setTitle,
+      showAlert,
+      showOk,
+    } = instance;
+    sendEvent(EventsSent.GET_SETTINGS, context);
+    return {
+      action,
+      clearEventListeners,
+      context,
+      on,
+      setGlobalSetting,
+      setSetting,
+      setTitle,
+      showAlert,
+      showOk,
       settings: await new Promise<Settings>((res) => {
         this.on(
           EventsReceived.DID_RECEIVE_SETTINGS,
@@ -764,19 +817,14 @@ abstract class StreamDeck {
       data.payload.settings,
       this.uuid
     );
-    this.instances.push(instance);
+    this.instances[instance.context] = instance;
     this.emit(EventsReceived.INIT, {
       instance,
     });
   }
 
   willDisappear(data: WillDisappearEvent) {
-    const instance = this.instances.find(
-      (i) =>
-        i.action === data.action &&
-        i.context === data.context &&
-        i.device === data.device
-    );
+    const instance = this.instances[data.context];
     if (instance) {
       instance.emit(EventsReceived.DESTROY, {
         instance,
@@ -784,32 +832,12 @@ abstract class StreamDeck {
       this.emit(EventsReceived.DESTROY, {
         instance,
       });
-      const index = this.instances.indexOf(instance);
-      if (index > -1) {
-        this.instances.slice(index, 0);
-      }
+      delete this.instances[data.context];
     }
   }
 
-  // didReceiveGlobalSettings(data: DidReceiveGlobalSettingsEvent) {
-  //   if (process.env.NODE_ENV === "development")
-  //     console.log(
-  //       "StreamDeck Event - didReceiveGlobalSettings:",
-  //       data.payload.settings
-  //     );
-  //   this.globalSettings = data.payload.settings;
-  // }
-
-  // didReceiveSettings(data: DidReceiveSettingsEvent) {
-  //   if (process.env.NODE_ENV === "development")
-  //     console.log(
-  //       "StreamDeck Event - didReceiveSettings:",
-  //       data.payload.settings
-  //     );
-  //   this.settings = data.payload.settings;
-  // }
-
   send(data: { event: string; uuid: string }) {
+    console.log(data);
     this.websocket.send(JSON.stringify(data));
   }
 
@@ -972,7 +1000,6 @@ abstract class StreamDeck {
   }
 
   removeEventListener(type: EventsReceived, listener: (...args: any) => any) {
-    console.log();
     if (!this.eventListeners.hasOwnProperty(type)) {
       return false;
     }
@@ -1041,37 +1068,40 @@ export abstract class StreamDeckInstance extends StreamDeck {
     this.globalSettings[key] = value;
     this.sendEvent(
       EventsSent.SET_GLOBAL_SETTINGS,
-      this.globalSettings,
-      this.uuid
+      this.uuid,
+      this.globalSettings
     );
   }
 
   setGlobalSettings(settings: GlobalSettings) {
-    this.sendEvent(EventsSent.SET_GLOBAL_SETTINGS, settings, this.uuid);
+    this.sendEvent(EventsSent.SET_GLOBAL_SETTINGS, this.context, settings);
   }
 
   setSetting(key: keyof Settings, value: unknown) {
     if (!this.settings) this.settings = {};
-    this.sendEvent(EventsSent.SET_SETTINGS, { ...this.settings, [key]: value });
+    this.sendEvent(EventsSent.SET_SETTINGS, this.context, {
+      ...this.settings,
+      [key]: value,
+    });
   }
 
   setSettings(settings: Settings) {
     this.settings = settings;
-    this.sendEvent(EventsSent.SET_SETTINGS, settings);
+    this.sendEvent(EventsSent.SET_SETTINGS, this.context, settings);
   }
 
   openUrl(url: string) {
-    this.sendEvent(EventsSent.OPEN_URL, { url });
+    this.sendEvent(EventsSent.OPEN_URL, this.context, { url });
   }
 
   logMessage(message: string) {
-    this.sendEvent(EventsSent.LOG_MESSAGE, { message });
+    this.sendEvent(EventsSent.LOG_MESSAGE, this.context, { message });
   }
 
   sendEvent(
     eventName: EventsSent,
-    payload: any = undefined,
-    context = this.context,
+    context: string,
+    payload?: any,
     action?: string
   ) {
     const data: any = {
@@ -1088,6 +1118,10 @@ export abstract class StreamDeckInstance extends StreamDeck {
       console.log("StreamDeck - sendEvent:", data);
     this.send(data);
   }
+}
+
+export interface StreamDeckInstances {
+  [context: string]: StreamDeckInstance;
 }
 
 export class StreamDeckPluginInstance extends StreamDeckInstance {
@@ -1162,19 +1196,19 @@ export class StreamDeckPluginInstance extends StreamDeckInstance {
   }
 
   showAlert() {
-    this.sendEvent(EventsSent.SHOW_ALERT);
+    this.sendEvent(EventsSent.SHOW_ALERT, this.context);
   }
 
   showOk() {
-    this.sendEvent(EventsSent.SHOW_OK);
+    this.sendEvent(EventsSent.SHOW_OK, this.context);
   }
 
   setState(state: number) {
-    this.sendEvent(EventsSent.SET_STATE, { state });
+    this.sendEvent(EventsSent.SET_STATE, this.context, { state });
   }
 
   switchToProfile(profile: string) {
-    this.sendEvent(EventsSent.SWITCH_TO_PROFILE, { profile });
+    this.sendEvent(EventsSent.SWITCH_TO_PROFILE, this.context, { profile });
   }
 
   sendToPropertyInspector(payload: any) {
@@ -1195,7 +1229,7 @@ class StreamDeckPropertyInspectorInstance extends StreamDeckInstance {
   sendEvent(
     eventName: EventsSent,
     payload: any = undefined,
-    context: string = this.uuid,
+    context: string,
     action?: string
   ) {
     super.sendEvent(eventName, payload, context, action);
