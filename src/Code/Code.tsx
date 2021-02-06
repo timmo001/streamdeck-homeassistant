@@ -7,6 +7,7 @@ import {
   HassServices,
   HassUser,
 } from "home-assistant-js-websocket";
+import { cloneDeep } from "lodash";
 
 import {
   GenericObject,
@@ -46,51 +47,6 @@ export default function Code(): ReactElement {
   const [, setHassServices] = useState<HassServices>();
   const [, setUser] = useState<HassUser>();
 
-  const handleGetDataResult = useCallback(
-    (data: StreamDeckPluginItem) => {
-      console.log("Code - getData result:", data);
-      const items: StreamDeckPluginItem[] = sdItems;
-      if (
-        !items.find(
-          (item: StreamDeckPluginItem) =>
-            item.instance.context === data.instance.context
-        )
-      ) {
-        console.log("Code - getData result - new item:", data.instance.context);
-        items.push(data);
-        setSdItems(items);
-      }
-    },
-    [sdItems]
-  );
-
-  useEffect(() => {
-    if (!sdPlugin) {
-      sdPlugin = new StreamDeckPlugin();
-      sdPlugin
-        .getGlobalData(true)
-        .then(
-          (data: {
-            globalSettings: GlobalSettings;
-            localization: GenericObject;
-          }) => {
-            console.log("Code - getGlobalData result:", data);
-            setGlobalSettings(data.globalSettings);
-            setLocalization(data.localization);
-          }
-        );
-
-      sdPlugin.on(EventsReceived.INIT, (event: PluginInitEvent) => {
-        const instance: StreamDeckPluginInstance = event.detail.instance;
-        console.log(
-          "Code - getData instance init:",
-          event.detail.instance.context
-        );
-        sdPlugin.getData(instance).then(handleGetDataResult);
-      });
-    }
-  }, [handleGetDataResult]);
-
   useEffect(() => {
     if (globalSettings?.haConnection && hassConnectionState === -2) {
       setHassConnection(globalSettings?.haConnection);
@@ -98,18 +54,19 @@ export default function Code(): ReactElement {
     }
   }, [globalSettings, hassConnectionState]);
 
-  useEffect(() => {
-    if (globalSettings && sdItems && hassEntities) {
-      const items = sdItems;
-      items.forEach((sdItem: StreamDeckPluginItem, index: number): void => {
+  const handleUpdateTitle = useCallback(
+    (sdItem: StreamDeckPluginItem, index: number) => {
+      if (globalSettings && hassEntities) {
+        const items = cloneDeep(sdItems);
         let title: string = "";
+        let entity: HassEntity;
         switch (sdItem.instance.action) {
           case "dev.timmo.homeassistant.customservice":
             if (typeof sdItem.settings.haValue === "string")
               title = sdItem.settings.haValue;
             break;
           default:
-            const entity: HassEntity = hassEntities[sdItem.settings.haEntity];
+            entity = hassEntities[sdItem.settings.haEntity];
             if (entity?.entity_id) {
               // Set title
               const domain: string = entity.entity_id.split(".")[0];
@@ -162,11 +119,64 @@ export default function Code(): ReactElement {
           sdItem.title = title;
           items[index] = sdItem;
           setSdItems(items);
-          sdItem.instance.setTitle(sdItem.title);
+          sdItem.instance.setTitle(title);
         }
+      }
+    },
+    [globalSettings, sdItems, hassEntities]
+  );
+
+  const handleGetDataResult = useCallback(
+    (sdItem: StreamDeckPluginItem) => {
+      console.log("Code - getData result:", sdItem);
+      const items: StreamDeckPluginItem[] = sdItems;
+      if (
+        !items.find(
+          (item: StreamDeckPluginItem) =>
+            item.instance.context === sdItem.instance.context
+        )
+      ) {
+        console.log(
+          "Code - getData result - new item:",
+          sdItem.instance.context
+        );
+        items.push(sdItem);
+        setSdItems(items);
+      }
+    },
+    [sdItems]
+  );
+
+  useEffect(() => {
+    if (!sdPlugin) {
+      sdPlugin = new StreamDeckPlugin();
+      sdPlugin
+        .getGlobalData(true)
+        .then(
+          (data: {
+            globalSettings: GlobalSettings;
+            localization: GenericObject;
+          }) => {
+            console.log("Code - getGlobalData result:", data);
+            setGlobalSettings(data.globalSettings);
+            setLocalization(data.localization);
+          }
+        );
+
+      sdPlugin.on(EventsReceived.INIT, (event: PluginInitEvent) => {
+        const instance: StreamDeckPluginInstance = event.detail.instance;
+        console.log(
+          "Code - getData instance init:",
+          event.detail.instance.context
+        );
+        sdPlugin.getData(instance).then(handleGetDataResult);
       });
     }
-  }, [globalSettings, sdItems, hassEntities]);
+  }, [handleGetDataResult]);
+
+  useEffect(() => {
+    if (sdItems && hassEntities) cloneDeep(sdItems).forEach(handleUpdateTitle);
+  }, [sdItems, hassEntities, handleUpdateTitle]);
 
   const handleKeyUp = useCallback(
     (event: CustomEvent<KeyUpEvent>) => {
