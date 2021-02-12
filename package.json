@@ -33,7 +33,7 @@
     "eslint-webpack-plugin": "^2.5.0",
     "file-loader": "6.2.0",
     "fs-extra": "^9.1.0",
-    "home-assistant-js-websocket": "5.7.0",
+    "home-assistant-js-websocket": "5.8.0",
     "html-webpack-plugin": "4.5.1",
     "identity-obj-proxy": "3.0.0",
     "jest": "26.6.3",
